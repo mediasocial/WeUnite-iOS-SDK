@@ -13,7 +13,28 @@
 
 #define kWUAppName @"WeUnite"
 
+////TODO: Structure properly
 
-#define kWUMainURL @"http://weuniteapiv1.cloudapp.net/v1/"
-#define kWUAppPublicKey @"201506049871774"
-#define kWUAppSecretKey @"ea4d531e2a62c19c97ffefd2017e71fd"
+#define kWUMainURL /*@"https://api.weunite.com/v1/"*/ @"http://weunitetestapi.cloudapp.net/v1/"
+
+#define wuCurrentFunc() NSLog(@"%s",__func__)
+
+#define BOARD_PIN_SCREEN @"BOARD_PIN"
+
+
+#define kSampleBoardId @"1373" //@"1097"
+#define kSamplePassionId @"444"
+
+
+
+//Action Keys
+#define kActionInitAppKey @"initApp"
+#define kActionLoginKey @"login"
+#define kActionNewPinKey @"newPin"
+#define kActionOpenPinKey @"openPin"
+#define kActionOpenCommentsKey @"comments"
+
+
+//Delegate Response Dictionary Keys
+#define kResponseErrorKey @"error"
+#define kResponseActionKey @"action"

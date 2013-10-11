@@ -7,11 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <WeUniteSDK/WeUniteSDK.h>
 
-
-@interface ViewController : UIViewController
-
-
-- (IBAction)createSession:(id)sender ;
+@interface ViewController : UIViewController<WUSessionDelegate>
+{
+    WeUnite *mWeUnite;
+}
+-(IBAction)createSessionButtonPressed:(id)sender;
+-(IBAction)getCommentButtonPressed:(id)sender;
 
 @end

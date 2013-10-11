@@ -7,7 +7,9 @@
 //
 
 #import "ViewController.h"
-#import <WeUniteSDK/WeUniteSDK.h>
+#import "AppDelegate.h"
+
+
 
 @interface ViewController ()
 
@@ -22,13 +24,30 @@
     
 }
 
--(void)registerSuccess:(id)JSON{
-    NSLog(@"%@",JSON);
+
+
+-(IBAction)createSessionButtonPressed:(id)sender{
+    mWeUnite = [[WeUnite alloc] initWithAppKey:@"201506049871774" secretKey:@"ea4d531e2a62c19c97ffefd2017e71fd" andDelegate:self];
 }
 
--(void)registerFailure:(id)JSON{
-    NSLog(@"%@",JSON);
+-(IBAction)getCommentButtonPressed:(id)sender{
+   
+    
+//    [mWeUnite getCommentsForPassionID:kPassionId completionBlock:^(id JSON, NSError *error) {
+//        NSLog(@"%@,%@",JSON,error);
+//    }];
 }
+
+//WUSessionDelegate
+- (void)wuLogin:(BOOL)success{
+    NSString *successStatus = success?@"Success":@"Failure";
+    NSLog(@"%@",successStatus);
+}
+
+- (void)wuDidLogout{
+    NSLog(@"%@",@"logOut");
+}
+
 
 - (void)didReceiveMemoryWarning
 {
@@ -36,8 +55,4 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (IBAction)createSession:(id)sender
-{
-    [WURequest startRequestOfType:WURequestTypeRegistration delegate:self successSelector:@selector(registerSuccess:) failSelector:@selector(registerFailure:)];
-}
 @end

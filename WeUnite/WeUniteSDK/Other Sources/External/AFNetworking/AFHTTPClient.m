@@ -486,6 +486,14 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
                     break;
                 case AFJSONParameterEncoding:;
                     [request setValue:[NSString stringWithFormat:@"application/json; charset=%@", charset] forHTTPHeaderField:@"Content-Type"];
+                    if (0)
+                {
+                    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:&error];
+                    NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+                    NSLog(@"%@",jsonString);
+                   // [request setHTTPBody:jsonData];
+
+                }
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wassign-enum"
                     [request setHTTPBody:[NSJSONSerialization dataWithJSONObject:parameters options:0 error:&error]];

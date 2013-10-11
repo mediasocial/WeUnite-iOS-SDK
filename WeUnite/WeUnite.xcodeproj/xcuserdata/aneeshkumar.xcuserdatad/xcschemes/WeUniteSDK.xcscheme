@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "F6D9A9B617C7507200FCC3E7"
-               BuildableName = "WeUnite.framework"
+               BuildableName = "WeUniteSDK.framework"
                BlueprintName = "WeUniteSDK"
                ReferencedContainer = "container:WeUnite.xcodeproj">
             </BuildableReference>
