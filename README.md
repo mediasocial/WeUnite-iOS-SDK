@@ -4,8 +4,12 @@ WeUnite Framework for iOS is a way to follow and socialise around your favourite
 Check out the Help https://dev.weunite.com/how_to_guide for more detail on how to get the most from Weunite.
 
 
-Goals of framework
-================
+
+
+DOCUMENTATION
+=============
+The full documentation set, including info on building and recent changes, can
+be found at http://....
 
 
 
