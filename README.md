@@ -1,15 +1,19 @@
 About WeUniteSDK Framework:
 ==========================
 WeUnite Framework for iOS is a way to follow and socialise around your favourite passion and boards over WeUnite social network easily. 
-Check out the Help https://dev.weunite.com/how_to_guide for more detail on how to get the most from Weunite.
-
-
+Check out the Help https://dev.weunite.com/how_to_guide for more detail on how to get the most from WeUnite.
 
 
 DOCUMENTATION
 =============
 The full documentation set, including info on building and recent changes, can
 be found at http://....
+
+
+QUICK START
+=============
+For a quick start, check out the screencast on following link:
+http://weunite.com/...
 
 
 
