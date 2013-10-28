@@ -16,8 +16,6 @@
 
 
 
-
-
 /**
  * Get all Boards under Passion
  * @param passionID ID of the passion.
@@ -42,6 +40,6 @@
  * @param passionID ID of the passion.
  * @param completionBlock -- block which needs to be executred when operation is finished. ID of the passion.
  */
-- (void)comment:(NSString *)commentText passionID:(NSString *)passionID ForMemberID:(NSString *)memberID completionBlock:(PassionPostCompletionBlock)completionBlock;
+- (void)comment:(NSString *)commentText passionID:(NSString *)passionID ForMemberID:(NSString *)memberID completionBlock:(WURequestCompletionBlock)completionBlock;
 
 @end

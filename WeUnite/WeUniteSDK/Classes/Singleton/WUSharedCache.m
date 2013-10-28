@@ -9,6 +9,7 @@
 #import "WUSharedCache.h"
 #import "SynthesizeSingleton.h"
 #import "WUConstants.h"
+#import "WUConfiguration.h"
 
 
 //User Token
@@ -23,7 +24,9 @@
 
 @implementation WUSharedCache
 SYNTHESIZE_SINGLETON_FOR_CLASS(WUSharedCache);
+
 @synthesize mWeUnite;
+@synthesize mWUDialog;
 
 +(instancetype)wuSharedCache{
     return [self sharedWUSharedCache];
@@ -64,6 +67,23 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUSharedCache);
     [[NSUserDefaults standardUserDefaults] setObject:serviceTokenExpiry forKey:kKeyServiceTokenExpirty];
 }
 
+
+
+- (void)loginWeUnite:(id<WUActionDelegate>)delegate
+{
+    self.mWUDialog = nil;
+    
+    NSString *nibName = nil;
+    if (kCodeTest==NO) {
+        nibName = @"WeUniteSDK.framework/Versions/A/Resources/WUDialog";
+    }
+    else {
+        nibName = @"WUDialog";
+    }
+    UINib *nib = [UINib nibWithNibName:nibName bundle:nil];
+    [nib instantiateWithOwner:self options:nil];
+    [self.mWUDialog show:delegate];
+}
 
 
 @end

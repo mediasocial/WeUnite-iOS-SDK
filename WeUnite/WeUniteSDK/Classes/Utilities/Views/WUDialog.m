@@ -7,17 +7,19 @@
 //
 
 #import "WUDialog.h"
+#import "WUUtilities.h"
 #import "WUConstants.h"
 
 #import "UIKit+Extensions.h"
 #import "Foundation+Extensions.h"
 
 #import "WUSharedCache.h"
-
+#import "WUConfiguration.h"
 #import <QuartzCore/QuartzCore.h>
 
 @interface WUDialog(){
     IBOutlet UIActivityIndicatorView *mActivityView;
+    IBOutlet UIButton *mCloseButton;
     id<WUActionDelegate> mWUDelegate;
 }
 
@@ -49,7 +51,8 @@
 
 -(void)show :(id<WUActionDelegate>)delegate
 {
-    
+    UIImage *closeImage = [WUUtilities imageNamed:@"close.png"];
+    [mCloseButton setBackgroundImage:closeImage forState:UIControlStateNormal];
     mWUDelegate = delegate;
     
     UIWindow* window = [UIApplication sharedApplication].keyWindow;
@@ -62,7 +65,6 @@
     [window addSubview:self];
     
     // self.transform = [self transformForOrientation];
-    
     [self paint];
     [self loadWebView];
     
@@ -119,11 +121,13 @@
     WUSharedCache *sharedCache = [WUSharedCache wuSharedCache];
     WeUnite *weUnite = sharedCache.mWeUnite;
     
-    NSString *placeholderString = @"http://dev.weunite.com/?macaddr=123123&platform=iphone&appversion=v1.2&appkey=%@&secretkey=%@&accesstoken=%@";
+    NSString *placeholderString = @"%@?macaddr=121212&platform=iphone&appversion=v1.0&appkey=%@&secretkey=%@&accesstoken=%@" ;
+    
+    NSString *loginURLString = [NSString stringWithFormat:placeholderString,kWeUniteSiteURL, weUnite.mAppKey,weUnite.mAppSecretKey,weUnite.mAccessToken];
+    
+    NSLog(@" login url string is %@",loginURLString);
     
     
-    
-    NSString *loginURLString = [NSString stringWithFormat:placeholderString,weUnite.mAppKey,weUnite.mAppSecretKey,weUnite.mAccessToken];
     [mWebView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:loginURLString]]];
 }
 

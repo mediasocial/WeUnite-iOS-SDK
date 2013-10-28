@@ -10,6 +10,8 @@
 #import "WUConstants.h"
 #import "UIKit+Extensions.h"
 #import "AppDelegate.h"
+#import "WUConfiguration.h"
+#import "WUUtilities.h"
 
 @interface PhotoViewController ()
 
@@ -57,7 +59,7 @@ const NSUInteger kNumImages		= 15;
 	for (i = 1; i <= kNumImages; i++)
 	{
 		NSString *imageName = [NSString stringWithFormat:@"image%d.jpg", i];
-		UIImage *image = [UIImage imageNamed:imageName];
+		UIImage *image = [WUUtilities imageNamed:imageName];
 		UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, kScrollObjWidth, kScrollObjHeight)];
         [imageView setContentMode:UIViewContentModeScaleAspectFit];
         
@@ -107,27 +109,53 @@ const NSUInteger kNumImages		= 15;
 	// set the content size so it can be scrollable
 	[scrollView1 setContentSize:CGSizeMake((kNumImages * kScrollObjWidth), kScrollObjHeight)];
 }
+- (IBAction)weUniteSharePressed:(id)sender
+{
+    UIActionSheet* sheet = [[UIActionSheet alloc] initWithTitle:@"Share" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Share on Board", @"Share on Scrap Board", nil];
+    
+    [sheet showInView:self.view];
+    
+}
 
 
-- (IBAction)weUniteSharePressed:(id)sender {
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    NSLog(@"button index is %d",buttonIndex);
+    
+    if (buttonIndex == 0)
+    {
+        [self shareOnBoard:nil];
+    }
+    else if(buttonIndex == 1)
+    {
+        [self shareOnScrapBoard];
+    }
+}
+
+
+- (void)shareOnBoard:(id)sender
+{
     
     NSLog(@"current index is %d",(int)((int)(scrollView1.contentOffset.x)/(int)kScrollObjWidth));
     
     int imageIndex = (int)((int)(scrollView1.contentOffset.x)/(int)kScrollObjWidth);
     NSString* imgPinKey  = [NSString stringWithFormat:@"ImagePin_%d",imageIndex];
     NSString* imgPinId = [[NSUserDefaults standardUserDefaults] objectForKey:imgPinKey];
-    
-    
-    NSString* shareTypeScreen = (imageIndex % 2) == 0 ? @"1" : @"2";
     NSString* imgTitle = [NSString stringWithFormat:@"Image %d",imageIndex+1];
-
     UIImageView* imgView = (UIImageView*)[scrollView1 viewWithTag:imageIndex+1];
     
+    NSString* shareTypeScreen = (imageIndex % 2) == 0 ? kSharePanelTouchType : kSharePanelBarType;
+    
+    
+    /**
+     * To enable WeUnite share on any image, use the performAction method of framework with action Type as
+     *  kActionNewPinKey. In Response, server will return PinId, save that and call the same performAction method 
+     *  so that everyone can view/share/comment over it.
+     */
     AppDelegate *appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-
     if (imgPinId == nil) {
         
-        NSDictionary *infoDict = @{@"boardId":kSampleBoardId,
+        NSDictionary *infoDict = @{kKeyBoardLinkKey:kTestBoardId,
                                    @"image":imgView.image,
                                    @"title": imgTitle,
                                    @"description":@"This is cool",
@@ -144,6 +172,81 @@ const NSUInteger kNumImages		= 15;
 
     
 }
+
+
+-(void) shareOnScrapBoard
+{
+    
+    NSLog(@"share on scrap board is called...");
+    
+    
+    NSLog(@"current index is %d",(int)((int)(scrollView1.contentOffset.x)/(int)kScrollObjWidth));
+    
+    int imageIndex = (int)((int)(scrollView1.contentOffset.x)/(int)kScrollObjWidth);
+    NSString* imgPinKey  = [NSString stringWithFormat:@"Scrap_ImagePin_%d",imageIndex];
+    NSString* imgPinId = [[NSUserDefaults standardUserDefaults] objectForKey:imgPinKey];
+    NSString* imgTitle = [NSString stringWithFormat:@"Image %d",imageIndex+1];
+
+    
+    NSString* shareTypeScreen = (imageIndex % 2) == 0 ? kSharePanelTouchType : kSharePanelBarType;
+   
+    
+    NSString* mPinImgUrl = @"http://a3.twimg.com/profile_images/66601193/cactus.jpg";
+    if (imageIndex == 0) {
+        mPinImgUrl = @"http://a3.twimg.com/profile_images/66601193/cactus.jpg";
+    }
+    else if(imageIndex == 1)
+    {
+        mPinImgUrl = @"https://s3.amazonaws.com/twitter_production/profile_images/425948730/DF-Star-Logo.png";
+    }
+    else if(imageIndex == 2)
+    {
+        mPinImgUrl = @"http://imgs.mi9.com/uploads/landscape/4717/free-the-seaside-landscape-of-maldives-wallpaper_422_84903.jpg";
+    }
+    else if(imageIndex == 3)
+    {
+        mPinImgUrl = @"http://pics4.city-data.com/cpicc/cfiles42848.jpg";
+    }
+    else if(imageIndex == 4)
+    {
+        mPinImgUrl = @"http://www.beautifullife.info/wp-content/uploads/2011/03/16/20.jpg";
+    }
+    else if(imageIndex == 5)
+    {
+        mPinImgUrl = @"http://images.coveralia.com/audio/a/Angels_And_Airwaves-We_Don_t_Need_To_Whisper-Interior_Trasera.jpg";
+    }
+    
+    NSLog(@"imgPinId %d",imageIndex);
+    /**
+     * To enable WeUnite share on any image, use the performAction method of framework with action Type as
+     *  kActionNewPinKey. In Response, server will return PinId, save that and call the same performAction method
+     *  so that everyone can view/share/comment over it.
+     */
+    AppDelegate *appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if (imgPinId == nil) {
+        
+        NSDictionary *infoDict = @{kKeyBoardLinkKey:kTestScrapBoardLinkKey,
+                                   @"image":mPinImgUrl,
+                                   @"title": imgTitle,
+                                   @"description":@"This is cool",
+                                   @"shareType":shareTypeScreen};
+        
+        
+        [appDel.mWeUnite performAction:kActionNewScrapPinKey andParams:infoDict andDelegate:self];
+    }
+    else
+    {
+        NSDictionary *infoDict = @{@"pinKey":imgPinId, @"shareType":shareTypeScreen};
+        [appDel.mWeUnite performAction:kActionOpenPinKey andParams:infoDict andDelegate:self];
+    }
+    
+
+    
+}
+
+
+
+
 
 - (IBAction)backPressed:(id)sender {
     
@@ -193,6 +296,17 @@ const NSUInteger kNumImages		= 15;
         return;
     }
     
+    else  if ([action isEqualToString:kActionNewScrapPinKey]) {
+        
+        int imageIndex = (int)((int)(scrollView1.contentOffset.x)/(int)kScrollObjWidth);
+        NSString* pinId = params[@"pinKey"];
+        NSString* imgPinKey  = [NSString stringWithFormat:@"Scrap_ImagePin_%d",imageIndex];
+        [[NSUserDefaults standardUserDefaults] setObject:pinId forKey:imgPinKey];
+        
+        [UIAlertView showAlertMessage:@"New Pin creation is Successful."];
+        
+        return;
+    }
 
     
     

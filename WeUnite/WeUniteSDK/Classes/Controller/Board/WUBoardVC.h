@@ -7,19 +7,23 @@
 //
 
 #import <UIKit/UIKit.h>
-@class WUBaseVC;
+#import "WUBaseVC.h"
 #import "EGORefreshTableHeaderView.h"
+#import "WeUnite.h"
 
 @class TKImageCache;
 
 
-@interface WUBoardVC : WUBaseVC<UITextFieldDelegate,EGORefreshTableHeaderDelegate,UIActionSheetDelegate>{
+@interface WUBoardVC : WUBaseVC <UITextFieldDelegate, EGORefreshTableHeaderDelegate, UIActionSheetDelegate, WUActionDelegate>
+{
     TKImageCache *mProfilePicImageCache,*mPinImageCache;
     NSArray *mComments;
     NSMutableArray *mPins;
     NSDictionary *mBoardInfo;
     
     IBOutlet UIView *mBoardInfoView,*mPinsInfoView;
+    IBOutlet UIButton *mCreatePinButton;
+
     //IBOutlet UICollectionView *mBoardPinCollectionView;
     NSString *mBoardID;
     
@@ -27,8 +31,14 @@
     EGORefreshTableHeaderView *egoPullView;
     
     NSDictionary *mSelectedPinInfo;
+    
+    int typeOfOperation;
 }
-@property(nonatomic,strong) NSString *mBoardID; 
+
+
+
+@property(nonatomic,strong) NSString *mBoardID;
+@property (nonatomic, strong) NSDictionary* mBoardParams;
 
 @property(nonatomic,strong)NSArray *mComments;
 @property(nonatomic,strong) NSMutableArray *mPins;
@@ -40,7 +50,14 @@
 
 - (IBAction)createNewPinPressed:(id)sender;
 
+-(void)likePinItemPressed:(UIButton *)sender;
 
 
+
+-(void)linkPinPressed:(CGPoint)anchorPoint;
+
+-(void)sharePinPressed:(CGPoint)anchorPoint;
+
+-(void)likePinPressed:(CGPoint)anchorPoint;
 
 @end

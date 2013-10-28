@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface WUDeleteVC : UIViewController
-
+@interface WUDeleteVC : UIViewController{
+    IBOutlet UITableView *mTableView;
+}
+@property (nonatomic,strong) IBOutlet UITableView *mTableView;
 @end

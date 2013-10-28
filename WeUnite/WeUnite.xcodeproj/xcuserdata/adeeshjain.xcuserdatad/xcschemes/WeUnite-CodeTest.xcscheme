@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "F64DD74D17CB317700EB0035"
-               BuildableName = "WeUnite Test.app"
-               BlueprintName = "WeUnite Test"
+               BuildableName = "WeUniteCodeDebug.app"
+               BlueprintName = "WeUniteCodeDebug"
                ReferencedContainer = "container:WeUnite.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -33,8 +33,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F64DD74D17CB317700EB0035"
-            BuildableName = "WeUnite Test.app"
-            BlueprintName = "WeUnite Test"
+            BuildableName = "WeUniteCodeDebug.app"
+            BlueprintName = "WeUniteCodeDebug"
             ReferencedContainer = "container:WeUnite.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -52,8 +52,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F64DD74D17CB317700EB0035"
-            BuildableName = "WeUnite Test.app"
-            BlueprintName = "WeUnite Test"
+            BuildableName = "WeUniteCodeDebug.app"
+            BlueprintName = "WeUniteCodeDebug"
             ReferencedContainer = "container:WeUnite.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -70,8 +70,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F64DD74D17CB317700EB0035"
-            BuildableName = "WeUnite Test.app"
-            BlueprintName = "WeUnite Test"
+            BuildableName = "WeUniteCodeDebug.app"
+            BlueprintName = "WeUniteCodeDebug"
             ReferencedContainer = "container:WeUnite.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

@@ -11,30 +11,32 @@
  * 
  */
 
-#define kWUAppName @"WeUnite"
-
-////TODO: Structure properly
-
-#define kWUMainURL /*@"https://api.weunite.com/v1/"*/ @"http://weunitetestapi.cloudapp.net/v1/"
-
-#define wuCurrentFunc() NSLog(@"%s",__func__)
-
-#define BOARD_PIN_SCREEN @"BOARD_PIN"
+#import <Foundation/Foundation.h>
 
 
-#define kSampleBoardId @"1373" //@"1097"
-#define kSamplePassionId @"444"
+//TODO: Prefix with WU for the constants
 
 
 
-//Action Keys
-#define kActionInitAppKey @"initApp"
-#define kActionLoginKey @"login"
-#define kActionNewPinKey @"newPin"
-#define kActionOpenPinKey @"openPin"
-#define kActionOpenCommentsKey @"comments"
+////Following are the actions
+extern NSString *const kActionInitAppKey; 
+extern NSString *const kActionLoginKey; 
+extern NSString *const kActionNewPinKey; 
+extern NSString *const kActionNewScrapPinKey;
+
+extern NSString *const kActionOpenPinKey;
+extern NSString *const kActionOpenBoardKey;
+extern NSString *const kActionOpenPassionPosts;
 
 
+
+////Following are the keys used in dictionaries,userdefaults etc.
+extern NSString *const kKeyPassionLinkKey;
+extern NSString *const kKeyBoardLinkKey; 
 //Delegate Response Dictionary Keys
-#define kResponseErrorKey @"error"
-#define kResponseActionKey @"action"
+extern NSString *const kResponseErrorKey;
+extern NSString *const kResponseActionKey;
+
+
+
+

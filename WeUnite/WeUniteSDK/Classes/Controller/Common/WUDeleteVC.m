@@ -9,12 +9,14 @@
 #import "WUDeleteVC.h"
 #import "UIKit+Extensions.h"
 #import "WUConstants.h"
+#import "WUConfiguration.h"
 
 @interface WUDeleteVC ()
 
 @end
 
 @implementation WUDeleteVC
+@synthesize mTableView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -29,6 +31,9 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
+    [self.mTableView registerNib:[UINib nibWithNibName:@"WeUniteSDK.framework/Versions/A/Resources/WUPostCommentCell" bundle:nil] forCellReuseIdentifier:@"WUPostCommentCell"];
+    
+    UITableViewCell *cell = [self.mTableView dequeueReusableCellWithIdentifier:@"WUPostCommentCell"];
 }
 
 
@@ -39,6 +44,9 @@
     // Dispose of any resources that can be recreated.
 }
 
+-(IBAction)back:(id)sender{
+    [self dismissViewControllerAnimated:YES completion:NULL];
+}
 
 - (void)dealloc
 {

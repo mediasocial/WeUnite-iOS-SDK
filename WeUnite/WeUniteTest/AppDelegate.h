@@ -7,7 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <WeUniteSDK/WeUniteSDK.h>
+
+@class WeUnite;
+#define kKeyToken @"push_token"
+
+#define kPassionId @"444"
 
 @class ViewController;
 
@@ -16,6 +20,7 @@
 }
 
 @property (strong, nonatomic) UIWindow *window;
+@property (strong, nonatomic) WeUnite *mWeUnite;
 
 @property (strong, nonatomic) ViewController *viewController;
 

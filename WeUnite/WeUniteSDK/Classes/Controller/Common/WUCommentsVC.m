@@ -19,6 +19,7 @@
 
 #import "WUBoardServices.h"
 #import "WUConstants.h"
+#import "WUConfiguration.h"
 #import "WeUnite.h"
 #import "TKImageCache.h"
 #import "WUUtilities.h"
@@ -49,6 +50,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
 @synthesize mComments;
 @synthesize mFullPinInfo,mPassionInfo;
 @synthesize mCommentType,mTableView;
+@synthesize mPassionLinkKey;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -105,10 +107,12 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
     [self registerTableCells];
     [self setUpImageCaching];
     
-    if ([mCommentType isEqualToString:BOARD_PIN_SCREEN]) {
+    if ([mCommentType isEqualToString:kBoardPinScreen])
+    {
         [self loadPinComments];
         [_mScreenTitle setText:mFullPinInfo[@"Data_1"]];
-    }else{
+    }else
+    {
         self.mComments = [NSMutableArray array];
         [self addPullToRefresh];
         [self loadNextPassionComments];
@@ -187,7 +191,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    if (![self.mCommentType isEqualToString:BOARD_PIN_SCREEN]) {
+    if (![self.mCommentType isEqualToString:kBoardPinScreen]) {
         
     }
     
@@ -197,7 +201,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
     if (indexPath.section == 0) {
         MainPassionCell *cell = nil;
         
-        if ([self.mCommentType isEqualToString:BOARD_PIN_SCREEN]) {
+        if ([self.mCommentType isEqualToString:kBoardPinScreen]) {
             cell = (MainPassionCell *)[tableView dequeueReusableCellWithIdentifier:zMainPassionCellReuseIdentifier];
         }
         else {
@@ -212,7 +216,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
         UIImage *mainImage = nil;
         NSString *thumbFileName = nil;
         NSURL *thumbURL = nil;
-        if ([self.mCommentType isEqualToString:BOARD_PIN_SCREEN]) {
+        if ([self.mCommentType isEqualToString:kBoardPinScreen]) {
 
             NSString *thumbURLString = mFullPinInfo[@"Data_3"];
             thumbFileName = [thumbURLString lastPathComponent];
@@ -232,6 +236,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
         
          mainImage = [mImageCache imageForKey: thumbFileName url: thumbURL queueIfNeeded:YES tag:10000];
         cell.mPassionImageView.image = mainImage;
+        [cell.mLikeBtn setBackgroundImage:[WUUtilities  imageNamed:@"Like.png"] forState:UIControlStateNormal];
         //[cell.mPassionImageView ]
         return cell;
     }
@@ -251,7 +256,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
         
         
         NSString *eventTimeText = nil;
-        if ([mCommentType isEqualToString:BOARD_PIN_SCREEN])
+        if ([mCommentType isEqualToString:kBoardPinScreen])
         {
             
             cell = (WUCommentCell *)[tableView dequeueReusableCellWithIdentifier:zCommentCellReuseIdentifier];
@@ -373,19 +378,19 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
 -(void)registerTableCells
 {
     
-    [self.mTableView registerNib:[UINib nibWithNibName:@"WUCommentCell1" bundle:nil] forCellReuseIdentifier:zCommentCellReuseIdentifier1];
+    [self.mTableView registerNib:[UINib nibWithNibName:[WUUtilities xibBundlefileName:@"WUCommentCell1"] bundle:nil] forCellReuseIdentifier:zCommentCellReuseIdentifier1];
 
     
-    [self.mTableView registerNib:[UINib nibWithNibName:@"WUCommentCell" bundle:nil] forCellReuseIdentifier:zCommentCellReuseIdentifier];
+    [self.mTableView registerNib:[UINib nibWithNibName:[WUUtilities xibBundlefileName:@"WUCommentCell"] bundle:nil] forCellReuseIdentifier:zCommentCellReuseIdentifier];
     
     
     
     
-    [self.mTableView registerNib:[UINib nibWithNibName:@"WUPostCommentCell" bundle:nil] forCellReuseIdentifier:@"WUPostCommentCell"];
+    [self.mTableView registerNib:[UINib nibWithNibName:[WUUtilities xibBundlefileName:@"WUPostCommentCell"] bundle:nil] forCellReuseIdentifier:@"WUPostCommentCell"];
     
     
-    [self.mTableView registerNib:[UINib nibWithNibName:@"MainPassionCell" bundle:nil] forCellReuseIdentifier:zMainPassionCellReuseIdentifier];
-    [self.mTableView registerNib:[UINib nibWithNibName:@"MainPassionCell1" bundle:nil] forCellReuseIdentifier:zMainPassionCellReuseIdentifier1];
+    [self.mTableView registerNib:[UINib nibWithNibName:[WUUtilities xibBundlefileName:@"MainPassionCell"] bundle:nil] forCellReuseIdentifier:zMainPassionCellReuseIdentifier];
+    [self.mTableView registerNib:[UINib nibWithNibName:[WUUtilities xibBundlefileName:@"MainPassionCell1"] bundle:nil] forCellReuseIdentifier:zMainPassionCellReuseIdentifier1];
 
 }
 
@@ -398,12 +403,14 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
     [self.mTableView addGestureRecognizer:lpgr];
 }
 
--(void)loadPassionComments{
+-(void)loadPassionComments
+{
+
     WUPassionServices* services = [WUPassionServices sharedWUPassionServices];
     [mLoadingIndicatorView startAnimating];
     
     @weakify(self);
-    [services getPostsForPassionID:kSamplePassionId completionBlock:^(id JSON, NSError *error) {
+    [services getPostsForPassionID:mPassionLinkKey completionBlock:^(id JSON, NSError *error) {
         @strongify(self);
         NSLog(@"%@,%@",JSON,error);
         //self.mComments =  (NSArray *)JSON;
@@ -420,7 +427,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
     mIsLoading = YES;
     @weakify(self);
     
-    [services getPostsForPassionID:kSamplePassionId offset:self.mComments.count limit:15 completionBlock:^(id JSON, NSError *error)
+    [services getPostsForPassionID:mPassionLinkKey offset:self.mComments.count limit:15 completionBlock:^(id JSON, NSError *error)
     {
         @strongify(self);
         [self hideEgoRefreshView];
@@ -451,7 +458,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
     mIsLoading = YES;
 
     @weakify(self);
-    [services getPostsForPassionID:kSamplePassionId offset:0 limit:self.mComments.count completionBlock:^(id JSON, NSError *error) {
+    [services getPostsForPassionID:mPassionLinkKey offset:0 limit:self.mComments.count completionBlock:^(id JSON, NSError *error) {
         @strongify(self);
         [self hideEgoRefreshView];
         NSLog(@"%@,%@",JSON,error);
@@ -480,7 +487,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
     WUPassionServices* services = [WUPassionServices sharedWUPassionServices];
     
     @weakify(self);
-    [services getPassionInfoForID:@"444" completionBlock:^(id JSON, NSError *error) {
+    [services getPassionInfoForID:mPassionLinkKey completionBlock:^(id JSON, NSError *error) {
         @strongify(self);
         
         if (JSON == nil ) {
@@ -508,7 +515,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
         if (error == nil) {
             if ([JSON isKindOfClass:[NSDictionary class]])
             {
-                self.mComments = [[NSArray alloc] initWithObjects:JSON, nil];
+                self.mComments = [[NSMutableArray alloc] initWithObjects:JSON, nil];
             }
             else{
                 self.mComments = JSON;
@@ -533,15 +540,14 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
     
     
     if (memberID == nil) {
-        WeUnite *weUnite = [[WUSharedCache wuSharedCache] mWeUnite];
-        [weUnite loginWeUnite:self];
+        [[WUSharedCache wuSharedCache] loginWeUnite:self];
         mCommentToBePosted = comment;
         return;
     }
 
     
     
-    if ([mCommentType isEqualToString:BOARD_PIN_SCREEN]) {
+    if ([mCommentType isEqualToString:kBoardPinScreen]) {
         
         WUBoardServices* services = [WUBoardServices sharedWUBoardServices];
         @weakify(self);
@@ -556,8 +562,11 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
             if (error==nil)
             {
                 message = @"Posting successfull";
-                [self loadPinComments];
-                
+                double delayInSeconds = 0.10;
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    [self loadPinComments];
+                });
             }
             else {
                 message = @"Posting failure";
@@ -575,19 +584,22 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
         
         WUPassionServices* services = [WUPassionServices sharedWUPassionServices];
         @weakify(self);
-        [services comment:comment passionID:kSamplePassionId ForMemberID:memberID completionBlock:^(id JSON, NSError *error) {
+        [services comment:comment passionID:mPassionLinkKey ForMemberID:memberID completionBlock:^(id JSON, NSError *error) {
             @strongify(self);
 
-            NSLog(@"%@ %@",JSON,error);
             NSString *message = nil;
             if (error==nil) {
                 message = @"Posting successfull";
-                if ([mCommentType isEqualToString:BOARD_PIN_SCREEN]) {
-                    [self loadPinComments];
-                }else{
-                    [self reloadPassionComments];
-                }
                 
+                double delayInSeconds = 0.10;
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    if ([mCommentType isEqualToString:kBoardPinScreen]) {
+                        [self loadPinComments];
+                    }else{
+                        [self reloadPassionComments];
+                    }
+                });
             }
             else {
                 message = @"Posting failure";
@@ -609,7 +621,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
 -(IBAction)backItemPressed:(id)sender
 {
     
-    if ([mCommentType isEqualToString:BOARD_PIN_SCREEN]) {
+    if ([mCommentType isEqualToString:kBoardPinScreen]) {
         [self.navigationController popViewControllerAnimated:YES];
         return;
     }
@@ -620,7 +632,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
 
 -(void) likeBtnPressed:(id)sender{
     
-    if ([mCommentType isEqualToString:BOARD_PIN_SCREEN])
+    if ([mCommentType isEqualToString:kBoardPinScreen])
     {
         @weakify(self);
         WUBoardServices* boardServices = [WUBoardServices sharedWUBoardServices];
@@ -707,7 +719,7 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
     if (tag == 10000) {
         MainPassionCell *cell = nil;
         
-        if ([self.mCommentType isEqualToString:BOARD_PIN_SCREEN]) {
+        if ([self.mCommentType isEqualToString:kBoardPinScreen]) {
             cell = (MainPassionCell *)[self.mTableView dequeueReusableCellWithIdentifier:zMainPassionCellReuseIdentifier];
         }
         else {
@@ -780,8 +792,8 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
     //For WUCommentCell we ll direct the tap request to In app browser.
     if ([request.URL.absoluteString hasPrefix:@"http"]) {
         NSLog(@"%@",request.URL);
-        InAppBrowserVC *browserVC = [[InAppBrowserVC alloc] initWithNibName:@"InAppBrowserVC" bundle:nil];
-        browserVC.mURLString = @"https://dev.weunite.com/";
+        InAppBrowserVC *browserVC = [[InAppBrowserVC alloc] initWithNibName:[WUUtilities xibBundlefileName:@"InAppBrowserVC"] bundle:nil];
+        browserVC.mURLString = kWUMainInitialURL;
         [self.navigationController pushViewController:browserVC animated:YES];
         return NO;
     }
@@ -837,7 +849,6 @@ static NSString *zMainPassionCellReuseIdentifier1 = @"MainPassionCell1";
                 [WUUtilities flashMessage:@"Cannot update the same status again"];
             }
             
-            NSLog(@"%@",JSON);
         }];
     }
 }

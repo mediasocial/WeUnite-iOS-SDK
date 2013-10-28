@@ -39,7 +39,8 @@
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
 
-
+    NSLog(@"mCellType %d",mCellType);
+    
     if (mCellType == 2) {
         return;
     }
@@ -72,28 +73,28 @@
     
     if (CGRectContainsPoint(mShareBtn.frame, touchLocation))
     {
-        [mShareBtn setImage:[UIImage imageNamed:@"Share_HL.png"] forState:UIControlStateNormal];
-        [mLikeBtn setImage:[UIImage imageNamed:@"Like.png"] forState:UIControlStateNormal];
-        [mWeUniteWebBtn setImage:[UIImage imageNamed:@"Link.png"] forState:UIControlStateNormal];
+        [mShareBtn setImage:[WUUtilities imageNamed:@"Share_HL.png"] forState:UIControlStateNormal];
+        [mLikeBtn setImage:[WUUtilities imageNamed:@"Like.png"] forState:UIControlStateNormal];
+        [mWeUniteWebBtn setImage:[WUUtilities imageNamed:@"Link.png"] forState:UIControlStateNormal];
 
     }
     else if(CGRectContainsPoint(mLikeBtn.frame, touchLocation))
     {
-        [mShareBtn setImage:[UIImage imageNamed:@"Share.png"] forState:UIControlStateNormal];
-        [mLikeBtn setImage:[UIImage imageNamed:@"Like_HL.png"] forState:UIControlStateNormal];
-        [mWeUniteWebBtn setImage:[UIImage imageNamed:@"Link.png"] forState:UIControlStateNormal];
+        [mShareBtn setImage:[WUUtilities imageNamed:@"Share.png"] forState:UIControlStateNormal];
+        [mLikeBtn setImage:[WUUtilities imageNamed:@"Like_HL.png"] forState:UIControlStateNormal];
+        [mWeUniteWebBtn setImage:[WUUtilities imageNamed:@"Link.png"] forState:UIControlStateNormal];
         
     }
     else if(CGRectContainsPoint(mWeUniteWebBtn.frame, touchLocation))
     {
-        [mShareBtn setImage:[UIImage imageNamed:@"Share.png"] forState:UIControlStateNormal];
-        [mLikeBtn setImage:[UIImage imageNamed:@"Like.png"] forState:UIControlStateNormal];
-        [mWeUniteWebBtn setImage:[UIImage imageNamed:@"Link_HL.png"] forState:UIControlStateNormal];
+        [mShareBtn setImage:[WUUtilities imageNamed:@"Share.png"] forState:UIControlStateNormal];
+        [mLikeBtn setImage:[WUUtilities imageNamed:@"Like.png"] forState:UIControlStateNormal];
+        [mWeUniteWebBtn setImage:[WUUtilities imageNamed:@"Link_HL.png"] forState:UIControlStateNormal];
     }
     else{
-        [mShareBtn setImage:[UIImage imageNamed:@"Share.png"] forState:UIControlStateNormal];
-        [mLikeBtn setImage:[UIImage imageNamed:@"Like.png"] forState:UIControlStateNormal];
-        [mWeUniteWebBtn setImage:[UIImage imageNamed:@"Link.png"] forState:UIControlStateNormal];
+        [mShareBtn setImage:[WUUtilities imageNamed:@"Share.png"] forState:UIControlStateNormal];
+        [mLikeBtn setImage:[WUUtilities imageNamed:@"Like.png"] forState:UIControlStateNormal];
+        [mWeUniteWebBtn setImage:[WUUtilities imageNamed:@"Link.png"] forState:UIControlStateNormal];
     }
 }
 
@@ -107,9 +108,9 @@
         return;
     }
     
-    [mShareBtn setImage:[UIImage imageNamed:@"Share.png"] forState:UIControlStateNormal];
-    [mLikeBtn setImage:[UIImage imageNamed:@"Like.png"] forState:UIControlStateNormal];
-    [mWeUniteWebBtn setImage:[UIImage imageNamed:@"Link.png"] forState:UIControlStateNormal];
+    [mShareBtn setImage:[WUUtilities imageNamed:@"Share.png"] forState:UIControlStateNormal];
+    [mLikeBtn setImage:[WUUtilities imageNamed:@"Like.png"] forState:UIControlStateNormal];
+    [mWeUniteWebBtn setImage:[WUUtilities imageNamed:@"Link.png"] forState:UIControlStateNormal];
     
     
     UITouch* touch = [touches anyObject];
@@ -169,7 +170,7 @@
 }
 
 - (IBAction)pinLikeBtnPressed:(id)sender {
-        [(WUSharePin*)mSharePinController likePin:sender];
+    [(WUSharePin*)mSharePinController likePin:sender];
 }
 
 - (IBAction)pinShareBtnPressed:(id)sender {

@@ -19,6 +19,8 @@
     IBOutlet UIButton *mSelectBoardButton;
 }
 
+
+@property (nonatomic, strong) NSString* mPassionLinkKey;
 @property (weak, nonatomic)     IBOutlet UIImageView *mPinImageView;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *mActivity;
 @property (weak, nonatomic) IBOutlet UIButton *mCreatePinBtn;

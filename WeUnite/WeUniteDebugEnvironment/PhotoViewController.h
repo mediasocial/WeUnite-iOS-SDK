@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "WeUnite.h"
 
-@interface PhotoViewController : UIViewController <WUActionDelegate>
+@interface PhotoViewController : UIViewController <WUActionDelegate, UIActionSheetDelegate>{}
 
 
 - (IBAction)weUniteSharePressed:(id)sender;

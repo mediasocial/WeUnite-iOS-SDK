@@ -32,8 +32,8 @@
 -(void)setHighlighted:(BOOL)highlighted{
     [super setHighlighted:highlighted];
     if (highlighted) {
-        float offset = mSqueezeRadius - mNormalRadius;
-        self.mBoundingFrame = CGRectInset(self.frame, 1/offset,1/offset);
+        //float offset = mSqueezeRadius - mNormalRadius;
+        self.mBoundingFrame = CGRectInset(self.frame, 1/2,1/2);
         //self.frame = self.mBoundingFrame;
     }
     else
@@ -44,6 +44,8 @@
     [super setFrame:frame];
     
 }
+
+
 
 - (void) squeezeOut{
     float radian = 2 * 22/7 * (float)mDegrees/360;

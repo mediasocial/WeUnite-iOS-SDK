@@ -10,7 +10,7 @@
 #import <CoreLocation/CLLocation.h>
 #import <CoreLocation/CLLocationManager.h>
 #import <CoreLocation/CLLocationManagerDelegate.h>
-
+#import <UIKit/UIKit.h>
 
 @interface WUUtilities : NSObject <CLLocationManagerDelegate>
 {
@@ -32,5 +32,6 @@
 +(NSMutableString*) decodeForString:(NSString*)str;
 
 +(NSMutableString*) decodeString:(NSMutableString*)strBuf;
-
++(UIImage *)imageNamed:(NSString*)filename;
++(NSString *)xibBundlefileName:(NSString *)filename;
 @end

@@ -38,7 +38,11 @@
 
 #import "WUHowerGestureRecognizer.h"
 
+#import "WUSharedCache.h"
 #import "WUDeleteVC.h"
+#import "WUConfiguration.h"
+
+#import "InAppBrowserVC.h"
 
 @interface WUBoardVC ()
 {
@@ -48,7 +52,8 @@
 
 @implementation WUBoardVC
 @synthesize mComments,mPins,mBoardInfo;
-@synthesize mBoardID,mActivity,mBoardPinCollectionView;
+@synthesize mBoardParams, mBoardID;
+@synthesize mActivity,mBoardPinCollectionView;
 
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -104,10 +109,11 @@
     [super viewDidLoad];
     
     
-    
+    [mCreatePinButton setBackgroundImage:[WUUtilities imageNamed:@"Plus.png"] forState:UIControlStateNormal];
     
     // Do any additional setup after loading the view from its nib.
-    self.mBoardID = kSampleBoardId;
+    //self.mBoardID = mBoardParams[kKeyBoardLinkKey];
+    
     self.mPins = [NSMutableArray arrayWithCapacity:0];
     
   //  [WUUtilities findCurrentLocation];
@@ -140,7 +146,8 @@
 }
 
 - (IBAction)createNewPinPressed:(id)sender {
-    WUPinCreateVC *pinCreate = [[WUPinCreateVC alloc] initWithNibName:@"WUPinCreateVC" bundle:nil];
+    
+    WUPinCreateVC *pinCreate = [[WUPinCreateVC alloc] initWithNibName:[WUUtilities xibBundlefileName:@"WUPinCreateVC"] bundle:nil];
     pinCreate.mBoardID = self.mBoardID;
     [self.navigationController pushViewController:pinCreate
                                          animated:YES];
@@ -204,13 +211,11 @@
 
 -(void)registerCells{
     ////Board Cells
-    [self.mBoardPinCollectionView registerNib:[UINib nibWithNibName:@"WUBoardPinCell" bundle:nil] forCellWithReuseIdentifier:@"WUBoardPinCell"];
+    [self.mBoardPinCollectionView registerNib:[UINib nibWithNibName:[WUUtilities xibBundlefileName:@"WUBoardPinCell"] bundle:nil] forCellWithReuseIdentifier:@"WUBoardPinCell"];
 }
 
 -(void)addGestures
 {
-    return;
-    
     WUHowerGestureRecognizer *gr = [[WUHowerGestureRecognizer alloc] initWithTarget:self
                                                                              action:@selector(howerGesture:)];
     gr.minimumPressDuration = 0.25f;
@@ -283,7 +288,11 @@
         [cell.mLikeButton addTarget:self action:@selector(likePinItemPressed:) forControlEvents:UIControlEventTouchUpInside];
     }
     
+    NSLog(@"index path row is %d and row is %@",indexPath.row, self.mPins[indexPath.row]);
+    
     NSDictionary *pinInfo = self.mPins[indexPath.row];
+    
+    NSLog(@"pin info is %@",pinInfo);
     
     NSString *imageURLString = pinInfo[@"Data_3"];
     cell.mPinImageView.image = [mPinImageCache imageForKey:imageURLString.lastPathComponent url:[NSURL URLWithString:imageURLString] queueIfNeeded:YES tag:indexPath.row];
@@ -318,8 +327,10 @@
     NSString *likeCount = pinInfo[@"Like_Count"];
     NSString *commentCount = pinInfo[@"Comment_Count"];
     
-    cell.mLikesCountLabel.text = likeCount;
     
+    cell.mLikeImageView.image = [WUUtilities imageNamed:@"Like.png"];
+    cell.mCommentImgView.image = [WUUtilities imageNamed:@"Chat.png"];
+    cell.mLikesCountLabel.text = likeCount;
     cell.mCommentsCountLabel.text = commentCount;
     
     
@@ -352,9 +363,10 @@
    
     
 
-    WUCommentsVC* pinVC = [[WUCommentsVC alloc] initWithNibName:@"WUCommentsVC" bundle:nil];
+    WUCommentsVC* pinVC = [[WUCommentsVC alloc] initWithNibName:[WUUtilities xibBundlefileName:@"WUCommentsVC"] bundle:nil];
+    pinVC.mPassionLinkKey = boardId;
     pinVC.mFullPinInfo = pinInfo;
-    pinVC.mCommentType = BOARD_PIN_SCREEN;
+    pinVC.mCommentType = kBoardPinScreen;
     [self.navigationController pushViewController:pinVC animated:YES];
     
 }
@@ -415,6 +427,7 @@
 }
 
 -(void)reloadPin:(NSDictionary *)pinInfo{
+    
     mIsLoading = YES;
     [self.mActivity startAnimating];
     
@@ -424,7 +437,7 @@
         return;
     }
     
-    
+    NSLog(@"index is %d",index);
     
     WUBoardServices* services = [WUBoardServices sharedWUBoardServices];
     
@@ -434,15 +447,18 @@
         
         [self hideEgoRefreshView];
         
-        NSLog(@"%@",JSON);
         
         if (error == nil) {
             NSDictionary *allInfo = (NSDictionary *)JSON;
             NSDictionary *refreshedItem = allInfo[@"Board"][@"Item"];
             
-            if (refreshedItem != nil)
-            if([refreshedItem isKindOfClass:[NSDictionary class]]){
+            if (refreshedItem != nil && [refreshedItem isKindOfClass:[NSDictionary class]])
+            {
+                NSLog(@"replacng object is %@",self.mPins[index]);
+                
                 [self.mPins replaceObjectAtIndex:index withObject:refreshedItem];
+                NSLog(@"replacng object is %@",self.mPins[index]);
+                
                 [self.mBoardPinCollectionView reloadItemsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]]];
             }
             [self.mActivity stopAnimating];
@@ -460,8 +476,7 @@
     @weakify(self);
    [services getBoardPinsForBoardID:self.mBoardID offset:self.mPins.count limit:15 completionBlock:^(id JSON, NSError *error) {
        @strongify(self);
-       NSLog(@"%@ %@",JSON,error);
-
+     
         [self hideEgoRefreshView];
 
        
@@ -493,7 +508,6 @@
         @strongify(self);
         [self hideEgoRefreshView];
 
-        NSLog(@"%@ %@",JSON,error);
         
         if (error == nil) {
             //MainPassionCell *cell = (MainPassionCell *)[mTableView dequeueReusableCellWithIdentifier:zMainPassionCellReuseIdentifier];
@@ -504,7 +518,6 @@
             if (newItems.count!=0) {
                 [self.mPins addObjectsFromArray:newItems];
             }
-            NSLog(@"%@",self.mPins);
             [self.mBoardPinCollectionView reloadData];
         }
     }];
@@ -566,21 +579,98 @@
     }
 }
 
--(void)howerGesture:(WUHowerGestureRecognizer *)gestureRecog{
+-(void)howerGesture:(WUHowerGestureRecognizer *)gestureRecog
+{
+    
+    NSLog(@"gestureRecog.state %d",gestureRecog.state);
     if (gestureRecog.state == UIGestureRecognizerStateBegan) {
+
+        CGPoint tapPoint = [gestureRecog locationInView:self.mBoardPinCollectionView];
         
+        NSIndexPath *indexPath = (NSIndexPath *)[mBoardPinCollectionView indexPathForItemAtPoint:tapPoint];
         
+        mSelectedPinInfo = self.mPins[indexPath.row];
+   
     }
 }
 
--(void)likePinItemPressed:(UIButton *)sender{
-    WUBoardPinCell *pinCell = (WUBoardPinCell *)sender.superview.superview;
-    NSIndexPath *indexPath = [mBoardPinCollectionView indexPathForCell:pinCell];
+
+-(void)sharePinPressed:(CGPoint)anchorPoint
+{
+    
+    NSIndexPath *indexPath = (NSIndexPath *)[mBoardPinCollectionView indexPathForItemAtPoint:anchorPoint];
+    
     mSelectedPinInfo = self.mPins[indexPath.row];
+    NSLog(@"pin info is %@",mSelectedPinInfo);
+    
+    
+    
+    WUCommentsVC* pinVC = [[WUCommentsVC alloc] initWithNibName:[WUUtilities xibBundlefileName:@"WUCommentsVC"] bundle:nil];
+    pinVC.mPassionLinkKey = mSelectedPinInfo[@"Board_Id"];
+    pinVC.mFullPinInfo = mSelectedPinInfo;
+    pinVC.mCommentType = kBoardPinScreen;
+    [self.navigationController pushViewController:pinVC animated:YES];
+    
+}
+
+
+-(void)linkPinPressed:(CGPoint)anchorPoint
+{
+    NSIndexPath *indexPath = (NSIndexPath *)[mBoardPinCollectionView indexPathForItemAtPoint:anchorPoint];
+    
+    mSelectedPinInfo = self.mPins[indexPath.row];
+    NSLog(@"pin info is %@",mSelectedPinInfo);
+    
+    
+    InAppBrowserVC *inAppBrowserVC = [[InAppBrowserVC alloc] initWithNibName:[WUUtilities xibBundlefileName:@"InAppBrowserVC"] bundle:nil];
+    
+    NSString* mPinUrl = mSelectedPinInfo[@"Pin_URL"];
+    inAppBrowserVC.mURLString = mPinUrl;
+    [self.navigationController pushFadeViewController:inAppBrowserVC];
+
+}
+
+
+
+-(void)likePinPressed:(CGPoint)anchorPoint
+{
+    NSIndexPath *indexPath = (NSIndexPath *)[mBoardPinCollectionView indexPathForItemAtPoint:anchorPoint];
+    
+    mSelectedPinInfo = self.mPins[indexPath.row];
+    NSLog(@"pin info is %@",mSelectedPinInfo);
+    
+    [self likePinItemPressed:nil];
+}
+
+
+
+-(void)likePinItemPressed:(UIButton *)sender
+{
+
+    if (sender != nil) {
+        
+        WUBoardPinCell *pinCell = (WUBoardPinCell *)sender.superview.superview;
+        
+        NSIndexPath *indexPath = [mBoardPinCollectionView indexPathForCell:pinCell];
+        
+        mSelectedPinInfo = self.mPins[indexPath.row];
+
+    }
+    
+    NSLog(@"mselected pin info is %@",mSelectedPinInfo);
+    
+     NSString *memberID = [WUSharedCache getUserToken];
+    if (memberID == nil) {
+        [[WUSharedCache wuSharedCache] loginWeUnite:self];
+        typeOfOperation = 1;
+        return;
+    }
+    
     [self likePin];
 }
 
--(void)likePin{
+-(void)likePin
+{
     NSString *pinID = mSelectedPinInfo[@"Pin_Id"];
     
     WUBoardServices *boardServices = [WUBoardServices sharedWUBoardServices];
@@ -591,14 +681,17 @@
         @strongify(self);
         
         
-        NSLog(@"%@ %@",JSON,error);
         
         NSDictionary *responseDict = (NSDictionary *)JSON;
         int status = [responseDict[@"Pin"][@"Status"] intValue];
         
         if (status == 1) {
             [WUUtilities flashMessage:@"Post Liked Successfully"];
-            [self reloadPin:mSelectedPinInfo];
+            double delayInSeconds = 0.20;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self reloadPin:mSelectedPinInfo];
+            });
         }
         else{
             [WUUtilities flashMessage:@"Cannot update the same status again"];
@@ -608,10 +701,6 @@
         [self.mActivity stopAnimating];
        
     }];
-    
-}
-
--(void)share{
     
 }
 
@@ -630,5 +719,38 @@
 - (void)viewDidUnload {
     [self setMActivity:nil];
     [super viewDidUnload];
+}
+
+
+#pragma mark - WUAction Delegate Methods
+
+- (void)wuActionResponse:(BOOL)isSuccess params:(NSDictionary*)params
+{
+    NSString* actionKey = params[kResponseActionKey];
+    
+    if (isSuccess == false) {
+        NSError* error = params[@"error"];
+        [UIAlertView showAlertMessage:[error localizedDescription]];
+        return;
+    }
+    
+    
+    
+    if ([actionKey isEqualToString:kActionLoginKey])
+    {
+        //Login is successful
+        NSLog(@"typeOfOperation is %d",typeOfOperation);
+        
+        if (typeOfOperation == 1) {
+            
+            [self likePin];
+        }
+
+        return;
+    }
+    
+    
+    
+    
 }
 @end

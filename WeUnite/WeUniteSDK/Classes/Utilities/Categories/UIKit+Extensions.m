@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGL.h>
 #import "WUConstants.h"
+#import "WUConfiguration.h"
 
 #if __has_feature(objc_arc) && __clang_major__ >= 3
     #define ARC_ENABLED 1

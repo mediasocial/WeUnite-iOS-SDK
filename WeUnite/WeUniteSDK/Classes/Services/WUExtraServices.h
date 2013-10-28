@@ -24,4 +24,11 @@
 
 -(void) initApp:(NSString*)appKey SecretKey:(NSString*)secretKey completionBlock:(WURequestCompletionBlock)completionBlock;
 
+-(void)createScrapForBoardLinkID:(NSString *)boardLinkID
+                        memberID:(NSString *)memberID
+                        imageURL:(NSString *)imageURLString
+                           title:(NSString *)title
+                     description:(NSString *)desc completionBlock:(WURequestCompletionBlock)completionBlock;
+
++ (void)loginWeUnite:(id<WUActionDelegate>)delegate;
 @end

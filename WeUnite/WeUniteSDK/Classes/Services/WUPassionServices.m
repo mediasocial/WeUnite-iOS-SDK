@@ -11,6 +11,7 @@
 #import "AFNetworking.h"
 #import "WUSharedCache.h"
 #import "WUConstants.h"
+#import "WUConfiguration.h"
 #import "WUUtilities.h"
 #import <SystemConfiguration/SystemConfiguration.h>
 #import "Foundation+Extensions.h"
@@ -26,7 +27,7 @@ static NSString* kWUURLSchemePassionAllBoards = @"passion/%@/board";
 static NSString* kWUURLSchemePassionPost = @"/passion/%@/post";
 
 
-static NSString* kWUURLSchemePassionInfo = @"/passion/%@";
+static NSString* kWUURLSchemePassionInfo = @"passion/%@";
 
 
 static NSString* kWUURLSchemePassionPostLike = @"/post/%@/like";
@@ -57,9 +58,13 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUPassionServices)
     [request setValue:weUnite.mAccessToken forHTTPHeaderField:@"service_token"];
     
     NSLog(@"request is %@",request);
+    NSLog(@"weUnite.mAccessToken %@",weUnite.mAccessToken);
     
-    AFHTTPRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
+    AFHTTPRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON)
+    {
         id jsonResponse =  JSON;
+        NSLog(@"passion jsonREsponse is %@",jsonResponse);
+        
         if (jsonResponse != nil) {
             
             if (self.boardServiceResponseBlock)
@@ -143,15 +148,18 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUPassionServices)
 
 /**
  * Get all posts under Passion
- * @param passionID ID of the passion.
- * @param completionBlock -- block which needs to be executred when operation is finished. ID of the passion.
+ * @param passionLinkKey -- 
+ *                          Passion Link Key for which posts needs to be fetched.
+ * @param completionBlock --
+ *                          Block which needs to be executred when operation is finished. ID of the passion.
  */
-- (void)getPostsForPassionID:(NSString *)passionID completionBlock:(WURequestCompletionBlock)completionBlock
+- (void)getPostsForPassionID:(NSString *)passionLinkKey completionBlock:(WURequestCompletionBlock)completionBlock
 {
-    [self getPostsForPassionID:passionID offset:0 limit:15 completionBlock:completionBlock];
+    [self getPostsForPassionID:passionLinkKey offset:0 limit:15 completionBlock:completionBlock];
 }
 
-- (void)getPostsForPassionID:(NSString *)passionID offset:(NSInteger)offset limit:(NSInteger)limit completionBlock:(WURequestCompletionBlock)completionBlock{
+
+- (void)getPostsForPassionID:(NSString *)passionLinkKey offset:(NSInteger)offset limit:(NSInteger)limit completionBlock:(WURequestCompletionBlock)completionBlock{
     
     
     NSString* mAccessToken = [WUSharedCache getServiceToken];
@@ -161,7 +169,9 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUPassionServices)
     NSString *offsetStr = [NSString stringWithFormat:@"%d",offset];
     
     
-    NSString *urlString = [NSString stringWithFormat:@"%@passion/%@/post",kWUMainURL,kSamplePassionId];
+    NSString *urlString = [NSString stringWithFormat:@"%@passion/%@/post",kWUMainURL,passionLinkKey];
+    NSLog(@"passion url is %@",urlString);
+    
     NSURL *url = [NSURL URLWithString:urlString];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     [request setValue:limitStr forHTTPHeaderField:@"limit"];
@@ -169,7 +179,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUPassionServices)
     [request setValue:@"basic" forHTTPHeaderField:@"type"];
     [request setValue:mAccessToken forHTTPHeaderField:@"service_token"];
     
-    NSLog(@"%@",request.allHTTPHeaderFields);
+
     AFHTTPRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
         //  NSLog(@"Success %@",JSON);
         
@@ -213,7 +223,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUPassionServices)
  * @param passionID ID of the passion.
  * @param completionBlock -- block which needs to be executred when operation is finished. ID of the passion.
  */
-- (void)comment:(NSString *)commentText passionID:(NSString *)passionID ForMemberID:(NSString *)memberID completionBlock:(PassionPostCompletionBlock)completionBlock
+- (void)comment:(NSString *)commentText passionID:(NSString *)passionID ForMemberID:(NSString *)memberID completionBlock:(WURequestCompletionBlock)completionBlock
 {
     
     NSString* mAccessToken = [WUSharedCache getServiceToken];

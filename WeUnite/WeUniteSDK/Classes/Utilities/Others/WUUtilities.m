@@ -7,6 +7,8 @@
 //
 
 #import "WUUtilities.h"
+#import "WUConstants.h"
+#import "WUConfiguration.h"
 #import "SynthesizeSingleton.h"
 #import "iToast.h"
 
@@ -134,6 +136,18 @@ static CLLocationManager* locationManager;
     return strBuf;
 }
 
++(UIImage *)imageNamed:(NSString*)filename{
+    
+    if (kCodeTest == NO) {
+        filename = [NSString stringWithFormat:@"WeUniteSDK.framework/Versions/A/Resources/%@",filename];
+    }
+    return [UIImage imageNamed:filename];
+}
 
-
++(NSString *)xibBundlefileName:(NSString *)filename{
+    if (kCodeTest == NO ) {
+        filename = [NSString stringWithFormat:@"WeUniteSDK.framework/Versions/A/Resources/%@",filename];
+    }
+    return filename;
+}
 @end

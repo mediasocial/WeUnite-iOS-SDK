@@ -18,6 +18,8 @@
 #import "WUExtraServices.h"
 #import "UIKit+Extensions.h"
 #import "Foundation+Extensions.h"
+#import "WUConfiguration.h"
+
 /**
  *  first parameter is the Board ID
  *  2nd parameter is the limit
@@ -54,6 +56,11 @@ static NSString* kWUURLSchemeLikePin = @"pin/%@/like";
  *  1st parameter is the Board ID
  */
 static NSString* kWUURLSchemeNewPin = @"board/%@/pin";
+
+/**
+ *  1st parameter is the Board ID
+ */
+static NSString* kWUURLSchemeNewScrapPin = @"scrap/%@/pin";
 
 
 /**
@@ -290,26 +297,32 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
                                         @"Latitude":latitude,
                                         }
                              };
-    
+   
     NSMutableURLRequest *request = [httpClient requestWithMethod:@"POST" path:nil parameters:params];
     [request setValue:weUnite.mAccessToken forHTTPHeaderField:@"service_token"];
-    __weak WURequestCompletionBlock block = self.boardServiceResponseBlock;
+    
     AFHTTPRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
      
+        NSLog(@"Board Services like operation");
+        
         NSDictionary *responseDict = nil;
         if ([JSON isKindOfClass:[NSDictionary class]]) {
             responseDict = [(NSDictionary *)JSON dictionaryByReplacingNullWithValue:@""];
-            block(responseDict,nil);
+            if (self.boardServiceResponseBlock)
+                self.boardServiceResponseBlock(responseDict,nil);
         }
         else {
             NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:response.statusCode userInfo:nil];
-            block(nil,error);
+            if (self.boardServiceResponseBlock)
+                self.boardServiceResponseBlock(nil,error);
         }
         self.boardServiceResponseBlock = nil;
 
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
         NSLog(@"Failure");
-        self.boardServiceResponseBlock(JSON,error);
+        
+        if (self.boardServiceResponseBlock)
+            self.boardServiceResponseBlock(JSON,error);
         self.boardServiceResponseBlock = nil;
     }];
     [operation start];
@@ -345,7 +358,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
     NSString *urlScheme = [NSString stringWithFormat:kWUURLSchemeNewPin,boardId];
     NSString *urlString = [NSString stringWithFormat:@"%@%@",kWUMainURL,urlScheme];
     NSLog(@"create new pin url is %@",urlString);
-   // NSLog(@"pinProperties %@",pinProperties);
+   //NSLog(@"pinProperties %@",pinProperties);
     
     AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:urlString]];
     httpClient.parameterEncoding = AFJSONParameterEncoding;
@@ -357,7 +370,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
     [request setValue:memberID forHTTPHeaderField:@"user_token"];
     
     AFHTTPRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-        NSLog(@"create Pin is Success %@",JSON);
+        NSLog(@"create Pin is Success ");
         NSDictionary *responseDict = nil;
         if ([JSON isKindOfClass:[NSDictionary class]]) {
             responseDict = [(NSDictionary *)JSON dictionaryByReplacingNullWithValue:@""];
@@ -368,6 +381,81 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
             self.boardServiceResponseBlock(nil,error);
         }
         self.boardServiceResponseBlock = nil;
+    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
+        NSLog(@"Failure %@",error);
+        self.boardServiceResponseBlock(JSON,error);
+        self.boardServiceResponseBlock = nil;
+    }];
+    [operation start];
+    
+}
+
+
+
+/**
+ * Create New Scrap Board Pin
+ *
+ */
+- (void)createScrapPinForBoardID:(NSString *)boardId memberID:(NSString *)memberID pinProperties:(NSDictionary*)pinProperties completionBlock:(WURequestCompletionBlock)completionBlock{
+    
+    self.boardServiceResponseBlock = completionBlock;
+    
+    if ([WUExtraServices isConnectedToInternet] == NO) {
+        [UIAlertView showAlertMessage:@""];
+        NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil];
+        
+        if(self.boardServiceResponseBlock)
+            self.boardServiceResponseBlock(nil,error);
+        
+        self.boardServiceResponseBlock = nil;
+        return;
+    }
+    
+    WeUnite *weUnite = [WUSharedCache wuSharedCache].mWeUnite;
+    
+    NSString *urlScheme = [NSString stringWithFormat:kWUURLSchemeNewScrapPin,boardId];
+    NSString *urlString = [NSString stringWithFormat:@"%@%@",kWUMainURL,urlScheme];
+    NSLog(@"create new pin url is %@",urlString);
+    // NSLog(@"pinProperties %@",pinProperties);
+    
+    AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:urlString]];
+    httpClient.parameterEncoding = AFJSONParameterEncoding;
+    
+    
+    
+    NSMutableURLRequest *request = [httpClient requestWithMethod:@"POST" path:nil parameters:pinProperties];
+    [request setValue:weUnite.mAccessToken forHTTPHeaderField:@"service_token"];
+    [request setValue:memberID forHTTPHeaderField:@"user_token"];
+    
+    AFHTTPRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
+      
+        NSLog(@"createScrapPinForBoardID success");
+        
+        if ([JSON isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *reponseDict = (NSDictionary *)JSON;
+            int statusCode = [reponseDict[@"Data"][@"Status"] integerValue];
+            
+            if(statusCode != 1){
+                NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:response.statusCode userInfo:nil];
+                if (self.boardServiceResponseBlock != nil)
+                    self.boardServiceResponseBlock(JSON,error);
+            }
+            else{
+                if (self.boardServiceResponseBlock != nil)
+                    self.boardServiceResponseBlock(JSON,nil);
+            }
+        }
+        else {
+            NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:response.statusCode userInfo:nil];
+            if (self.boardServiceResponseBlock != nil)
+                self.boardServiceResponseBlock(nil,error);
+        }
+        
+        
+        self.boardServiceResponseBlock = nil;
+        
+        
+        
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
         NSLog(@"Failure");
         self.boardServiceResponseBlock(JSON,error);
@@ -383,12 +471,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
 
 
 
-
-
 - (void)getPinInfoForPinID:(NSString *)pinID completionBlock:(WURequestCompletionBlock)completionBlock{
   
     WUSharedCache *sharedCache = [WUSharedCache wuSharedCache];
     WeUnite *weUnite = sharedCache.mWeUnite;
+    
     
     self.boardServiceResponseBlock = completionBlock;
     if ([WUExtraServices isConnectedToInternet] == NO) {
@@ -421,17 +508,21 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
             jsonResponse = [(NSDictionary*)jsonResponse dictionaryByReplacingNullWithValue:@""];
         }
 
-        NSLog(@"response dict is %@",jsonResponse);
-        if (jsonResponse != nil) {
+        NSLog(@"getPinInfoForPinID jsonResponse dict");
+        
+        if (jsonResponse != nil)
+        {
             if (self.boardServiceResponseBlock)
                 self.boardServiceResponseBlock(jsonResponse ,nil);
+    
             self.boardServiceResponseBlock = nil;
         }
-        
-        else {
+        else
+        {
             NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil];
             if(self.boardServiceResponseBlock)
                 self.boardServiceResponseBlock(nil,error);
+            
             self.boardServiceResponseBlock = nil;
         }
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
@@ -506,7 +597,6 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
 {
     
     NSString* mAccessToken = [WUSharedCache getServiceToken];
-    NSLog(@"access token is %@",mAccessToken);
     
     self.boardPinsResponseBlock = completionBlock;
     
@@ -523,7 +613,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
     
     NSString *urlScheme = [NSString stringWithFormat:kWUURLSchemeBoardPins,boardID,limit , offset];
     NSString *urlString = [NSString stringWithFormat:@"%@%@",kWUMainURL,urlScheme];
-    NSLog(@"url string is %@",urlString);
+    NSLog(@"getBoardPinsForBoardID url string is %@",urlString);
     
     NSURL *url = [NSURL URLWithString:urlString];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
@@ -531,8 +621,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
     AFHTTPRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON)
     {
         
-        NSLog(@"response code is %d",response.statusCode);
-       // NSLog(@"Success %@",JSON);
+        NSLog(@"getBoardPinsForBoardID Success %@",JSON);
         
         NSDictionary *responseDict = [(NSDictionary *)JSON valueForKey:@"Board"];
         if ([responseDict isKindOfClass:[NSDictionary class]]) {
@@ -552,13 +641,15 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(WUBoardServices);
         
         
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
-        NSLog(@"Failure");
+        NSLog(@"getBoardPinsForBoardID Failure");
         if(self.boardPinsResponseBlock)
             self.boardPinsResponseBlock(JSON,error);
         self.boardPinsResponseBlock = nil;
     }];
     [operation start];
 }
+
+
 
 
 @end

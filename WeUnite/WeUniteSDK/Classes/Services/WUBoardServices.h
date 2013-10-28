@@ -63,6 +63,18 @@
 
 
 /**
+ *  Creates a pin for Scrap board ID
+ *
+ *  @param boardId         ScrapboardID
+ *  @param memberToken     memberToken
+ *  @param pinProperties   the whole postData
+ *  @param completionBlock gives the callbacks of result of requests to
+ *  owner.
+ */
+- (void)createScrapPinForBoardID:(NSString *)boardId memberID:(NSString *)memberID pinProperties:(NSDictionary*)pinProperties completionBlock:(WURequestCompletionBlock)completionBlock;
+
+
+/**
  *  Gets pin information for board ID
  *
  *  @param pinID         Unique id of Pin 

@@ -267,7 +267,7 @@ static NSString *zCommentCellReuseIdentifier = @"CommentCell";
 	[mHPGrowingTextView resignFirstResponder];
     [mContainerView performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
     
-    NSString *memberID = mSelectedCommentInfo[@"Member_Id"];
+    //NSString *memberID = mSelectedCommentInfo[@"Member_Id"];
     
     
     //TOOD -- This method has been moved to WUPassionServices

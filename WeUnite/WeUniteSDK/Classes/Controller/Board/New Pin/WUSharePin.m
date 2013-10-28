@@ -76,6 +76,8 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
     [self addNotifications];
     [self setUpImageCaching];
     
+    [WUUtilities findCurrentLocation];
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -125,9 +127,9 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
 -(void)registerTableCells{
     
      
-    [mTableView registerNib:[UINib nibWithNibName:@"WUCommentCell" bundle:nil] forCellReuseIdentifier:zCommentCellReuseIdentifier];
+    [mTableView registerNib:[UINib nibWithNibName:[WUUtilities xibBundlefileName:@"WUCommentCell"] bundle:nil] forCellReuseIdentifier:zCommentCellReuseIdentifier];
     
-    [mTableView registerNib:[UINib nibWithNibName:@"WUPostCommentCell" bundle:nil] forCellReuseIdentifier:zPostCellReuseIdentifier];
+    [mTableView registerNib:[UINib nibWithNibName:[WUUtilities xibBundlefileName:@"WUPostCommentCell"] bundle:nil] forCellReuseIdentifier:zPostCellReuseIdentifier];
 }
 
 -(IBAction)backItemPressed:(id)sender{
@@ -204,11 +206,19 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
         WUMainCell *cell = (WUMainCell *)[tableView dequeueReusableCellWithIdentifier:identifier];
         
         if (cell == nil) {
-            NSArray *nibArray = [[NSBundle mainBundle] loadNibNamed:@"WUMainCell" owner:nil options:nil];
+            NSArray *nibArray = [[NSBundle mainBundle] loadNibNamed:[WUUtilities xibBundlefileName:@"WUMainCell"] owner:nil options:nil];
             
             cell = (wuShareEntityType == 1) ? (WUMainCell*) nibArray[0] : (WUMainCell*)nibArray[1];
             
-            cell.mCellType = wuShareEntityType;
+            NSLog(@"wuShareEntityType %d",wuShareEntityType);
+            
+            if (wuShareEntityType == 1) {
+                cell.mCellType = 1;
+            }
+            else{
+                cell.mCellType = 2;
+            }
+            
         }
         
 
@@ -230,7 +240,12 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
         
         cell.mTableView = mTableView;
         cell.mSharePinController = self;
-        cell.mViewCountLabel.text = [NSString stringWithFormat:@"Views: %@",self.mPinInfo[@"View_Count"]];
+        if (self.mPinInfo[@"View_Count"] == nil) {
+            cell.mViewCountLabel.text = @"Views: ";
+        }else{
+            cell.mViewCountLabel.text = [NSString stringWithFormat:@"Views: %@",self.mPinInfo[@"View_Count"]];
+        }
+
         
         [cell.mShareBtn addTarget:self action:@selector(shareButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         [cell.mLikeBtn addTarget:self action:@selector(likeButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -326,9 +341,9 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
 
 -(void)inAppBrowerPressed:(id)sender
 {
-    InAppBrowserVC *inAppBrowserVC = [[InAppBrowserVC alloc] initWithNibName:@"InAppBrowserVC" bundle:nil];
+    InAppBrowserVC *inAppBrowserVC = [[InAppBrowserVC alloc] initWithNibName:[WUUtilities xibBundlefileName:@"InAppBrowserVC"] bundle:nil];
     
-    NSString* mPinUrl = self.mPinInfo[@"Pin_Url"];
+    NSString* mPinUrl = self.mPinInfo[@"Pin_URL"];
     inAppBrowserVC.mURLString = mPinUrl;
     [self.navigationController pushFadeViewController:inAppBrowserVC];
 }
@@ -339,7 +354,7 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
     NSString *pinID = mPinID;
     WUBoardServices* boardServices = [WUBoardServices sharedWUBoardServices];
     [boardServices likePin:pinID likeStatus:YES completionBlock:^(id JSON, NSError *error) {
-        NSLog(@"%@ %@",JSON,error);
+      
         if(error == nil){
             [UIAlertView showAlertMessage:@"Pin Liked!"];
         }
@@ -380,6 +395,72 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
 
 #pragma mark - Public Interface Methods for sharing Pin
 
+
+-(void) shareScrapPin:(NSDictionary*)pinParams WithDelegate:(id <WUActionDelegate>)delegate
+{
+    /*
+     NSDictionary *infoDict = @{@"boardID":kSampleBoardId,
+     @"image":[UIImage imageNamed:@"icon.png"],
+     @"title": @"Demo",
+     @"description":@"Desc"};
+     */
+    
+    pinDelegate = delegate;
+    
+    if(pinParams[kKeyBoardLinkKey] == nil)
+    {
+        NSAssert(pinParams[kKeyBoardLinkKey], @"WeUnite Pin --> Scrap Board Link Key is mandatory");
+        return;
+    }
+    
+    if (pinParams[@"title"] == nil) {
+        NSAssert(pinParams[@"title"], @"WeUnite Pin --> Title is mandatory");
+        return;
+    }
+    
+    if (pinParams[@"image"] == nil) {
+        NSAssert(pinParams[@"image"], @"WeUnite Pin --> Image is mandatory");
+        return;
+    }
+    
+    
+    
+    //All Mandatory fields are present so now get values...
+    if ([pinParams[@"image"] isKindOfClass:[UIImage class]]) {
+        mPinImage = pinParams[@"image"];
+        mScrapPinImgUrl = nil;
+    }
+    else{
+        [self loadPinImageFromUrl:pinParams[@"image"]];
+        mScrapPinImgUrl = pinParams[@"image"];
+    }
+    
+    mBoardID = pinParams[kKeyBoardLinkKey];
+    mPinTitle = pinParams[@"title"];
+    mPinDescription = pinParams[@"description"] == nil ? @"" : pinParams[@"description"];
+    wuShareEntityType = pinParams[@"shareType"] == nil ? 1 : [pinParams[@"shareType"] intValue];
+    
+    NSLog(@"mBoardId %@, mPinTitle %@, mPinDesc %@, share %d",mBoardID, mPinTitle, mPinDescription, wuShareEntityType);
+    
+    self.mPinInfo = [
+                     @{@"Data_1": mPinTitle,
+                       @"Data_2": mPinDescription,
+                       @"Data_3": mPinImage,
+                       @"Data_4": [NSNull null],
+                       @"Data_5": @"image",
+                       @"View_Count": @"1"
+                       } mutableCopy];
+    
+
+    [mTableView reloadData];
+    [self performSelectorInBackground:@selector(createScrapBoardPin) withObject:nil];
+    
+}
+
+
+
+
+
 -(void) sharePin:(NSDictionary*)pinParams WithDelegate:(id <WUActionDelegate>)delegate
 {
     /*
@@ -391,9 +472,11 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
     
     pinDelegate = delegate;
     
-    if(pinParams[@"boardId"] == nil)
+    NSLog(@"pinParams[kKeyBoardLinkKey]  %@",pinParams[kKeyBoardLinkKey] );
+    
+    if(pinParams[kKeyBoardLinkKey] == nil)
     {
-        NSAssert(pinParams[@"boardId"], @"WeUnite Pin --> Board Key is mandatory");
+        NSAssert(pinParams[kKeyBoardLinkKey], @"WeUnite Pin --> Board Key is mandatory");
         return;
     }
     
@@ -417,8 +500,9 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
         [self loadPinImageFromUrl:pinParams[@"image"]];
     }
 
+    NSLog(@"mpin image is %@",mPinImage);
     
-    mBoardID = pinParams[@"boardId"];
+    mBoardID = pinParams[kKeyBoardLinkKey];
     mPinTitle = pinParams[@"title"];
     mPinDescription = pinParams[@"description"] == nil ? @"" : pinParams[@"description"];
     wuShareEntityType = pinParams[@"shareType"] == nil ? 1 : [pinParams[@"shareType"] intValue];
@@ -434,7 +518,13 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
                      @"View_Count": @"1"
                      } mutableCopy];
     
-    [self performSelectorInBackground:@selector(createPin) withObject:nil];
+    
+    NSLog(@"self.mPinInfo %@",self.mPinInfo);
+
+    [mTableView reloadData];
+    
+    [self performSelectorInBackground:@selector(createBoardPin) withObject:nil];
+
 
 }
 
@@ -472,23 +562,146 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
     
     NSData* data = [NSData dataWithContentsOfURL:[NSURL URLWithString:pinImgUrl.urlEncode]];
     mPinImage = [UIImage imageWithData:data];
-    
-    NSLog(@"load pin image from url %@",pinImgUrl);
+    NSLog(@"mPinImage %@",mPinImage);
+    NSLog(@"load pin image from url %@",pinImgUrl.urlEncode);
 }
 
 
 
 #pragma mark - Create Pin Method
--(void)createPin
+-(void)createScrapBoardPin
 {
     
     NSString *userToken = [WUSharedCache getUserToken];
     
     if (userToken == nil)
     {
-        WeUnite *weUnite = [[WUSharedCache wuSharedCache] mWeUnite];
+        typeOfPostOperation = 2;
+        [[WUSharedCache wuSharedCache] performSelectorOnMainThread:@selector(loginWeUnite:) withObject:self waitUntilDone:NO];
+        return;
+    }
+    
+    [Base64 initialize];
+    
+    
+    NSDictionary* dict = nil;
+  
+    
+
+    CLLocation* location = [[WUUtilities sharedWUUtilities] getUserLocation];
+    NSString* latitude = [NSString stringWithFormat:@"%lf",location.coordinate.latitude];
+    NSString* longitude = [NSString stringWithFormat:@"%lf",location.coordinate.longitude];
+    
+    
+    NSLog(@"mScrapPinImgUrl %@",mScrapPinImgUrl);
+    if (mScrapPinImgUrl != nil || [mScrapPinImgUrl length] > 0) {
+        
+        NSString *imageExt = [mPinImgUrl.lastPathComponent.pathExtension lowercaseString];
+        NSString *imageType = (imageExt != nil) ? [NSString stringWithFormat:@"image/%@",imageExt]: @"image/jpg";
+        
+       
+        
+        // Pass ImageURL to server
+        dict = @{
+                         @"Member_Token": userToken,
+                         @"Title": mPinTitle,
+                         @"Description": mPinDescription,
+                         @"Image_Link": mScrapPinImgUrl,
+                         @"Image_Type": imageType,
+                         @"Longitude": latitude,
+                         @"Latitude": longitude,
+                         @"Image": @{
+                                 @"Name": @"",
+                                 @"Content": @"",
+                                 @"Content_Type": @""
+                                 }
+                 };
+        
+        
+    }
+    else{
+        
+        // Pass Image object to server
+        NSData* imgData = UIImageJPEGRepresentation(mPinImage, 0.7);
+        NSString *pinImage64 = [Base64 encode:imgData];
+        
+        dict = @{
+                 @"Member_Token": userToken,
+                         @"Title": mPinTitle,
+                         @"Description": mPinDescription,
+                         @"Image_Link": pinImage64,
+                         @"Image_Type": @"image/jpeg",
+                         @"Longitude": latitude,
+                         @"Latitude": longitude,
+                         @"Image": @{
+                                 @"Name": @"",
+                                 @"Content": @"",
+                                 @"Content_Type": @""
+                                 }
+                         
+                 };
+        
+        
+    }
+    
+    [SVProgressHUD showInView:self.view];
+    
+    WUBoardServices *boardServices = [WUBoardServices sharedWUBoardServices];
+    [boardServices  createScrapPinForBoardID:mBoardID memberID:userToken  pinProperties:dict completionBlock:^(id JSON, NSError *error)
+     {
+        
+         
+         NSLog(@"createPinForBoardID %@ %@",JSON,error);
+         
+         if (error != nil) {
+             //TOOD- Improve Message description as per error
+             NSDictionary *errorInfo =[NSDictionary dictionaryWithObject:@"Sorry, There is problem in creating Pin."forKey:NSLocalizedDescriptionKey];
+             
+             NSError *outError = [NSError errorWithDomain:@"Pin Creation error" code:501 userInfo:errorInfo];
+             
+             
+             NSDictionary* pinErrorResponse = @{kResponseActionKey:kActionNewPinKey,
+                                                outError:kResponseErrorKey};
+             [pinDelegate wuActionResponse:NO params:pinErrorResponse];
+             
+             return ;
+         }
+         
+         NSDictionary *jsonInfo = (NSDictionary *)JSON;
+         mPinID = jsonInfo[@"Data"][@"Board_Data_Id"];
+         NSLog(@"mPinID %@",mPinID);
+         
+         NSDictionary* pinResponse = @{kResponseActionKey:kActionNewPinKey,
+                                       @"pinKey":mPinID};
+         
+         [pinDelegate wuActionResponse:YES params:pinResponse];
+         
+         
+         //Load PIN Info as it has high priority.
+         [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(loadPinInfo:) userInfo:mPinID repeats:NO];
+         
+         
+         [SVProgressHUD dismiss];
+         
+     }];
+}
+
+
+
+
+
+
+#pragma mark - Create Pin Method
+-(void)createBoardPin
+{
+    
+    NSString *userToken = [WUSharedCache getUserToken];
+    
+    if (userToken == nil)
+    {
+        
         typeOfPostOperation = 0;
-        [weUnite performSelectorOnMainThread:@selector(loginWeUnite:) withObject:self waitUntilDone:NO];
+        [[WUSharedCache wuSharedCache] performSelectorOnMainThread:@selector(loginWeUnite:) withObject:self waitUntilDone:NO];
         return;
     }
     
@@ -551,6 +764,7 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
     
     
     WUBoardServices *boardServices = [WUBoardServices sharedWUBoardServices];
+    NSLog(@"mBoardID %@",mBoardID);
     [boardServices  createPinForBoardID:mBoardID memberID:userToken  pinProperties:dict completionBlock:^(id JSON, NSError *error)
     {
        // NSLog(@"createPinForBoardID %@ %@",JSON,error);
@@ -573,13 +787,17 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
         mPinID = jsonInfo[@"Board"][@"Pin_Info"][@"Pin_Id"];
         NSLog(@"mPinID %@",mPinID);
         
+        //Load PIN Info as it has high priority.
+
+        [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(loadPinInfo:) userInfo:mPinID repeats:NO];
+        
+
+        
         NSDictionary* pinResponse = @{kResponseActionKey:kActionNewPinKey,
                                       @"pinKey":mPinID};
         [pinDelegate wuActionResponse:YES params:pinResponse];
         
         
-        //Load PIN Info as it has high priority.
-        [self loadPinInfo:mPinID];
         
         [SVProgressHUD dismiss];
         
@@ -597,8 +815,8 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
 -(void)loadPinInfo:(NSString*)pinKey
 {
     
-    WeUnite *weUnite = [[WUSharedCache wuSharedCache]mWeUnite];
-    [weUnite getPinInfoForPinID:mPinID completionBlock:^(id JSON, NSError *error) {
+    WUBoardServices *boardServices = [WUBoardServices sharedWUBoardServices];
+    [boardServices getPinInfoForPinID:mPinID completionBlock:^(id JSON, NSError *error) {
         
         self.mPinInfo = JSON;
         NSLog(@"----------- mpininfo is %@",self.mPinInfo);
@@ -607,14 +825,17 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
         //As Pin Info is loaded so now load Pin Comments
         [self loadPinComments];
     }];
+
+    
 }
 
 -(void)loadPinComments{
     double delayInSeconds = 0.10;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        WeUnite *weUnite = [[WUSharedCache wuSharedCache]mWeUnite];
-        [weUnite getCommentsForPinID:mPinID completionBlock:^(id JSON, NSError *error)
+        
+        WUBoardServices *boardServices = [WUBoardServices sharedWUBoardServices];
+        [boardServices getCommentsForPinID:mPinID completionBlock:^(id JSON, NSError *error)
          {
              if (error == nil) {
                  if ([JSON isKindOfClass:[NSDictionary class]])
@@ -648,12 +869,12 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
 -(void)postComment:(NSString *)comment
 {
     NSString *memberID = [WUSharedCache getUserToken];
-    WeUnite *weUnite = [[WUSharedCache wuSharedCache]mWeUnite];
+
     if (memberID == nil) {
         
         typeOfPostOperation = 1;
         mPinDescription = comment;
-        [weUnite performSelectorOnMainThread:@selector(loginWeUnite:) withObject:self waitUntilDone:NO];
+        [[WUSharedCache wuSharedCache] performSelectorOnMainThread:@selector(loginWeUnite:) withObject:self waitUntilDone:NO];
         return;
     }
     
@@ -704,7 +925,16 @@ static NSString *zMainCellReuseIdentifier1 = @"WUMainCell1";
     if ([actionKey isEqualToString:kActionLoginKey])
     {
         //Login is successful
-        (typeOfPostOperation == 0) ? [self createPin] : [self postComment:mPinDescription];
+        if (typeOfPostOperation == 0) {
+            [self createBoardPin];
+        }
+        else if(typeOfPostOperation == 1){
+            [self postComment:mPinDescription];
+        }
+        else if(typeOfPostOperation == 2){
+            [self createScrapBoardPin];
+        }
+
         return;
     }
     

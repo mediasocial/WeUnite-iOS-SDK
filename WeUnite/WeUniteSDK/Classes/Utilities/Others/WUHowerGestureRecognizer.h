@@ -10,8 +10,8 @@
 #import <UIKit/UIGestureRecognizerSubclass.h>
 
 
-@interface WUHowerGestureRecognizer : UIGestureRecognizer{
-
+@interface WUHowerGestureRecognizer : UILongPressGestureRecognizer{
+   // NSObject* mSelectorDelegate;
 }
 @property (nonatomic) CFTimeInterval minimumPressDuration;
 @property(nonatomic,strong)UIView *mMainView;

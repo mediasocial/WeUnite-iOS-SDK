@@ -9,6 +9,7 @@
 #import "WUPinCommentsVC.h"
 #import "WUSharedCache.h"
 #import "TKImageCache.h"
+#import "WUBoardServices.h"
 
 @interface WUPinCommentsVC ()
 {
@@ -44,9 +45,11 @@
 }
 
 
--(void)loadComments{
-    WeUnite *weUnite = [[WUSharedCache wuSharedCache]mWeUnite];
-    [weUnite getCommentsForPinID:self.mPinID completionBlock:^(id JSON, NSError *error) {
+-(void)loadComments
+{
+    
+    WUBoardServices *boardServices = [WUBoardServices sharedWUBoardServices];
+    [boardServices getCommentsForPinID:self.mPinID completionBlock:^(id JSON, NSError *error) {
         if(error == nil){
             mComments = (NSArray *)JSON;
             [mTableView reloadData];

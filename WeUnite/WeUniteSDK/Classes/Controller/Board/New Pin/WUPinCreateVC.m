@@ -17,12 +17,15 @@
 
 #import "SVProgressHUD.h"
 #import "WUUtilities.h"
+#import "WUBoardServices.h"
 
 @interface WUPinCreateVC ()
 @end
 
 @implementation WUPinCreateVC
 @synthesize mBoardID,mBoardName;
+
+@synthesize mPassionLinkKey;
 @synthesize mPinImageView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -38,6 +41,9 @@
 {
     [super viewDidLoad];
     
+    
+    [self.mCreatePinBtn setBackgroundImage:[WUUtilities imageNamed:@"Pin.png"] forState:UIControlStateNormal];
+    
     [WUUtilities findCurrentLocation];
     
     [mPinImageView.layer setCornerRadius:5.0];
@@ -46,15 +52,18 @@
     
     mSelectBoardButton.hidden = YES;
 
-    if (self.mBoardID==nil) {
+    if (self.mBoardID == nil) {
         mSelectBoardButton.hidden = NO;
     }
 
-   
-
 }
 
-
+-(void) viewWillAppear:(BOOL)animated
+{
+    
+    [[UIApplication sharedApplication] setStatusBarHidden:YES];
+    
+}
 
 -(void) setPinImage:(UIImage*)img
 {
@@ -75,8 +84,8 @@
 -(IBAction)selectBoardID:(id)sender
 {
     
-    WUBoardSelectVC *boardVC = [[WUBoardSelectVC alloc] initWithNibName:@"WUBoardSelectVC" bundle:nil];
-    boardVC.mPassionID = kSamplePassionId;
+    WUBoardSelectVC *boardVC = [[WUBoardSelectVC alloc] initWithNibName:[WUUtilities xibBundlefileName:@"WUBoardSelectVC"] bundle:nil];
+    boardVC.mPassionID = mPassionLinkKey;
     
     __weak WUBoardSelectVC *weakBoard = boardVC;
     boardVC.completionBlock = ^(BOOL success,NSString *selectedID){
@@ -113,11 +122,10 @@
 
 -(IBAction)createPinItemPressed:(id)sender
 {
-    WeUnite *weUnite = [[WUSharedCache wuSharedCache] mWeUnite];
     NSString *userToken = [WUSharedCache getUserToken];
     
     if (userToken == nil) {
-        [weUnite loginWeUnite:self];
+        [[WUSharedCache wuSharedCache] loginWeUnite:self];
         return;
     }
 
@@ -182,7 +190,8 @@
     [SVProgressHUD showInView:self.view];
     
 
-    [weUnite createPinForBoardID:self.mBoardID memberID:userToken  pinProperties:dict completionBlock:^(id JSON, NSError *error) {
+    WUBoardServices *boardServices = [WUBoardServices sharedWUBoardServices];
+    [boardServices createPinForBoardID:self.mBoardID memberID:userToken  pinProperties:dict completionBlock:^(id JSON, NSError *error) {
         
         NSLog(@"JSON %@  error %@",JSON,error);
         if(error == nil){

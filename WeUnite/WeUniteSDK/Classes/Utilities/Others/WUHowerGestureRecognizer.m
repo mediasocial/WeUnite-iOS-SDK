@@ -8,6 +8,7 @@
 
 #import "WUHowerGestureRecognizer.h"
 #import "WUHowerImageView.h"
+#import "WUBoardVC.h"
 
 CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
     rect = CGRectOffset(rect,dx-rect.size.width*0.5f,dy-rect.size.height*0.5f);
@@ -31,29 +32,34 @@ CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
 @end
 
 @implementation WUHowerGestureRecognizer
+
 @synthesize mSelectorDelegate;
 - (id)init {
     if (self = [super init]) {
         self.minimumPressDuration = 0.5;
         
-        UIImageView *likeImageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"Like.png"]];
-        UIImageView *linkImageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"Link.png"]];
-        UIImageView *shareImageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"Share.png"]];
+        UIImageView *likeImageView = [[UIImageView alloc]initWithImage:[WUUtilities imageNamed:@"Like.png"]];
+        UIImageView *linkImageView = [[UIImageView alloc]initWithImage:[WUUtilities imageNamed:@"Link.png"]];
+        UIImageView *shareImageView = [[UIImageView alloc]initWithImage:[WUUtilities imageNamed:@"Share.png"]];
         
        mButtonImageViews = @[likeImageView,linkImageView,shareImageView];
     }
     return self;
 }
 
-- (id)initWithTarget:(id)target action:(SEL)action {
-    if (self = [super initWithTarget:target action:action]) {
+- (id)initWithTarget:(id)target action:(SEL)action
+{
+    if (self = [super initWithTarget:target action:action])
+    {
+        
+        mSelectorDelegate = target;
         self.minimumPressDuration = 0.5;
-        WUHowerImageView *likeImageView = [[WUHowerImageView alloc]initWithImage:[UIImage imageNamed:@"Like.png"]];
-        likeImageView.highlightedImage = [UIImage imageNamed:@"Like_HL.png"];
-        WUHowerImageView *linkImageView = [[WUHowerImageView alloc]initWithImage:[UIImage imageNamed:@"Link.png"]];
-        linkImageView.highlightedImage = [UIImage imageNamed:@"Link_HL.png"];
-        WUHowerImageView *shareImageView = [[WUHowerImageView alloc]initWithImage:[UIImage imageNamed:@"Share.png"]];
-        shareImageView.highlightedImage = [UIImage imageNamed:@"Share_HL.png"];
+        WUHowerImageView *likeImageView = [[WUHowerImageView alloc]initWithImage:[WUUtilities imageNamed:@"Like.png"]];
+        likeImageView.highlightedImage = [WUUtilities imageNamed:@"Like_HL.png"];
+        WUHowerImageView *linkImageView = [[WUHowerImageView alloc]initWithImage:[WUUtilities imageNamed:@"Link.png"]];
+        linkImageView.highlightedImage = [WUUtilities imageNamed:@"Link_HL.png"];
+        WUHowerImageView *shareImageView = [[WUHowerImageView alloc]initWithImage:[WUUtilities imageNamed:@"Share.png"]];
+        shareImageView.highlightedImage = [WUUtilities imageNamed:@"Share_HL.png"];
         
         mButtonImageViews = @[likeImageView,linkImageView,shareImageView];
         self.mMainView = [[UIView alloc]init];
@@ -75,11 +81,14 @@ CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
 
 }
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    
     [super touchesBegan:touches withEvent:event];
+    
     if ([touches count] != 1 || [[touches anyObject] tapCount] > 1) {
         self.state = UIGestureRecognizerStateFailed;
         return;
     }
+    
     UIWindow *window = [[UIApplication sharedApplication] keyWindow];
     CGPoint touchPoint = [[touches anyObject] locationInView:window];
     self.anchorPoint = touchPoint;
@@ -93,7 +102,7 @@ CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesMoved:touches withEvent:event];
-    NSLog(@"touches Moved");
+  
     
     if (self.didLongPress == NO) {
         [self.pressTimer invalidate];
@@ -111,7 +120,9 @@ CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesEnded:touches withEvent:event];
     self.state = UIGestureRecognizerStateEnded;
-    [self checkForSelectionAtPoint:[[touches anyObject] locationInView:self.view]];
+    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    CGPoint touchPoint = [[touches anyObject] locationInView:window];
+    [self checkForSelectionAtPoint:touchPoint];
     [self animateOutHower];
 }
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -198,6 +209,7 @@ CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
         imageView.mNormalRadius = radius;
         imageView.mSqueezeRadius = radius + 20;
         imageView.mAnchorPoint = self.anchorPoint;
+        imageView.center = self.anchorPoint;
         imageView.mBoundingFrame = frame;
         [self.mMainView addSubview:imageView];
     }
@@ -205,7 +217,8 @@ CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
   //  [window addSubview:nil];
 }
 
-- (void)longPressed:(NSTimer*)theTimer {
+- (void)longPressed:(NSTimer*)theTimer
+{
     if (theTimer == self.pressTimer) {
         self.state = UIGestureRecognizerStateBegan;
         self.didLongPress = YES;
@@ -221,10 +234,11 @@ CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
     [UIView animateWithDuration:0.4 animations:^{
         self.mMainView.alpha = 1.0f;
     }];
-    for (UIImageView *imageView in mButtonImageViews) {
+    for (WUHowerImageView *imageView in mButtonImageViews) {
         imageView.alpha = 0.0f;
         [UIView animateWithDuration:0.50 animations:^{
             imageView.alpha = 1.0f;
+            [imageView backToNormal];
         } completion:^(BOOL finished) {
         }];
 
@@ -275,7 +289,8 @@ CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
 -(void)checkForSelectionAtPoint:(CGPoint)point{
     for (int i = 0; i < mButtonImageViews.count; i++) {
         UIImageView *imageView = mButtonImageViews[i];
-        if (CGRectContainsPoint(imageView.frame, point)) {
+        CGRect touchframe = CGRectInset(imageView.frame, -10, -10);
+        if (CGRectContainsPoint(touchframe, point)) {
             switch (i) {
                 case 0:
                     [self likeItemSelected];
@@ -293,15 +308,20 @@ CGRect CGRectChangeCenter(CGRect rect, CGFloat dx, CGFloat dy){
 }
 
 -(void)likeItemSelected{
-
+    [(WUBoardVC*)mSelectorDelegate likePinPressed:self.anchorPoint];
+    NSLog(@"like item selected is called.");
 }
 
 -(void)linkItemSelected{
+    [(WUBoardVC*)mSelectorDelegate linkPinPressed:self.anchorPoint];
+        NSLog(@"link item selected is called.");
 
 }
 
 -(void)shareItemSelected{
-
+    NSLog(@"share item selected is called. %f",self.anchorPoint.x);
+    [(WUBoardVC*)mSelectorDelegate sharePinPressed:self.anchorPoint];
+  //  [mSelectorDelegate share:sender];
 }
 
 @end

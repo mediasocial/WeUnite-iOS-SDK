@@ -13,35 +13,10 @@
 
 @protocol WUActionDelegate;
 
-/*TODO: At end Check whether Block name PassionCommentsFetchCompletionBlock,
- PassionPostCompletionBlock can be replaced by RequestCompleted name
- */
-
-typedef void (^PassionCommentsFetchCompletionBlock)(id JSON, NSError *error);
-
-typedef void (^PassionPostCompletionBlock)(id JSON, NSError *error);
-
-
-
-
-//typedef void (^BoardInfoRequestCompletionBlock)(id JSON, NSError *error);
-
-typedef void (^PinCommentsRequestCompletionBlock)(id JSON, NSError *error); //Name Change if possible
-
-typedef void (^BoardPinsRequestCompletionBlock)(id JSON, NSError *error);
-
 
 typedef void (^WURequestCompletionBlock)(id JSON, NSError *error);
 
 
-//typedef void ();
-
-/**
- *  Functions:
- *  Create Session, End Session
- *  Session Validation
- *  Login, Logout, Authorize.
- */
 @interface WeUnite : NSObject{
     NSString* mAccessToken;
     NSDate* mExpirationDate;
@@ -53,6 +28,7 @@ typedef void (^WURequestCompletionBlock)(id JSON, NSError *error);
 
 @property(nonatomic, strong) NSString* mAccessToken,*mAppKey, *mAppSecretKey;
 @property(nonatomic, strong) NSDate* mExpirationDate;
+
 
 
 /**
@@ -70,13 +46,6 @@ typedef void (^WURequestCompletionBlock)(id JSON, NSError *error);
 
 
 
-/**
- *  Presents the Dialog Box for login
- */
-- (void)loginWeUnite:(id<WUActionDelegate>)delegate;
-
-
-
 
 /**
  *  This method check whether the session is valid or not
@@ -88,44 +57,12 @@ typedef void (^WURequestCompletionBlock)(id JSON, NSError *error);
 
 
 /**
- *  This method presents the BoardController to view Board/Comments/Pin
- *
- *  @param parentController ParentController from which the modal controller is
- *  been presented
- */
-- (void)presentModalBoardPinsControllerFromParentController:(UIViewController *)parentController;
-
-/**
- *  This  method gets the Board Pin/Comments on the board ID
- *
- *  @param boardID  ID of the Board.
- *  @param completionBlock gives the callbacks of result of requests to
- *  owner.
- */
-- (void)getCommentsForPinID:(NSString *)pinID completionBlock:(PinCommentsRequestCompletionBlock)completionBlock;
-
-
-/**
- *  Creates a pin for board ID
- *
- *  @param boardId         boardID
- *  @param pinProperties   the whole postData
- *  @param completionBlock gives the callbacks of result of requests to
- *  owner.
- */
-- (void)createPinForBoardID:(NSString *)boardId memberID:(NSString *)memberID  pinProperties:(NSDictionary*)pinProperties completionBlock:(WURequestCompletionBlock)completionBlock;
-
-/**
  *  Register for push with post notification
  *
- *  @param deviceToken deviceToken
+ *  @param deviceToken -- Push token for device
  */
 - (void)registerForPushWithToken:(NSString *)deviceToken;
 
-
-
-
-- (void)getPinInfoForPinID:(NSString *)pinID completionBlock:(WURequestCompletionBlock)completionBlock;
 
 
 
@@ -143,6 +80,13 @@ typedef void (^WURequestCompletionBlock)(id JSON, NSError *error);
  *            dialog has completed.
  */
 - (void) performAction:(NSString *)action andParams:(NSDictionary *)params  andDelegate:(id <WUActionDelegate>)delegate;
+
+
+
+
+
+
+
 
 
 @end
@@ -166,8 +110,6 @@ typedef void (^WURequestCompletionBlock)(id JSON, NSError *error);
                 @{@"action":action, @"other parmas":@""....};
  */
 - (void)wuActionResponse:(BOOL)isSuccess params:(NSDictionary*)params;
-
-
 
 @end
 

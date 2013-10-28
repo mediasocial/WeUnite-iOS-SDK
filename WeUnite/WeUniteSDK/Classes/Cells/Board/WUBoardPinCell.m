@@ -8,6 +8,7 @@
 
 #import "WUBoardPinCell.h"
 #import "WUConstants.h"
+#import "WUConfiguration.h"
 
 @implementation WUBoardPinCell
 @synthesize mPinImageView,mAuthorImageView;

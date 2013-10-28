@@ -19,9 +19,12 @@
     NSMutableArray *mComments;
     NSDictionary *mPassionInfo;
     
-    
     NSString* mCommentToBePosted;
+    
+
 }
+
+@property(nonatomic, strong) NSString* mPassionLinkKey;
 
 @property(nonatomic,strong)NSMutableArray *mComments;
 

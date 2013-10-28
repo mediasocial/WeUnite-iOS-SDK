@@ -11,6 +11,7 @@
 
 #import "WUPinCreateVC.h"
 #import "InAppBrowserVC.h"
+#import "WUConfiguration.h"
 
 @interface WUButton(){
 
@@ -20,6 +21,9 @@
 
 
 @implementation WUButton
+
+static NSString* mPassionLinkKey;
+
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -39,12 +43,15 @@
 }
 */
 
-+(instancetype)weUniteButtonWithParentController:(UIViewController *)parentController{
++(instancetype)weUniteButtonWithParentController:(UIViewController *)parentController forPassionLinkKey:(NSString*)passionLinkKey
+{
     WUButton *button = [self buttonWithType:UIButtonTypeCustom];
-    UIImage *image = [UIImage imageNamed:@"wuFist.png"];
-    [button setBackgroundImage:image forState:UIControlStateNormal];
+   
+    [button setBackgroundImage:[WUUtilities imageNamed:@"wuFist.png"] forState:UIControlStateNormal];
     [button addTarget:button action:@selector(presentActionSheet) forControlEvents:UIControlEventTouchUpInside];
     button.parentController = parentController;
+    mPassionLinkKey = passionLinkKey;
+    
     return button;
 }
 
@@ -89,8 +96,8 @@
 }
 
 - (void)gotoWeUnite{
-    InAppBrowserVC *browserVC = [[InAppBrowserVC alloc] initWithNibName:@"InAppBrowserVC" bundle:nil];
-    browserVC.mURLString = @"https://dev.weunite.com/";
+    InAppBrowserVC *browserVC = [[InAppBrowserVC alloc] initWithNibName:[WUUtilities xibBundlefileName:@"InAppBrowserVC"] bundle:nil];
+    browserVC.mURLString = kWeUniteSiteURL;
     [self.parentController presentViewController:browserVC animated:YES
                                       completion:NULL];
 }
@@ -153,12 +160,15 @@
 
 - (void) loadCreatePin:(UIImage*)img
 {
-    WUPinCreateVC *pinCreateVC = [[WUPinCreateVC alloc] initWithNibName:@"WUPinCreateVC" bundle:nil];
+    WUPinCreateVC *pinCreateVC = [[WUPinCreateVC alloc] initWithNibName:[WUUtilities xibBundlefileName: @"WUPinCreateVC"] bundle:nil];
+    pinCreateVC.mPassionLinkKey = mPassionLinkKey;
     UINavigationController *navVC = [[UINavigationController alloc] initWithRootViewController:pinCreateVC];
     navVC.navigationBarHidden = YES;
     [self.parentController presentViewController:navVC animated:YES completion:NULL];
-    NSLog(@"%@",pinCreateVC.view);
+   
     [pinCreateVC setPinImage:img];
 }
+
+
 
 @end

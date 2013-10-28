@@ -30,6 +30,8 @@
     IBOutlet UIView *mOverlayView;
     
     int wuShareEntityType;
+    
+    NSString* mScrapPinImgUrl;
 }
 
 
@@ -60,7 +62,7 @@
  */
 -(void) sharePin:(NSDictionary*)pinParams WithDelegate:(id <WUActionDelegate>)delegate;
 
-
+-(void) shareScrapPin:(NSDictionary*)pinParams WithDelegate:(id <WUActionDelegate>)delegate;
 
 //Open Already Shared Pin with existing WeUnite PinKey.
 -(void) openPin:(NSDictionary*)params WithDelegate:(id <WUActionDelegate>)delegate;

@@ -8,6 +8,7 @@
 
 #import "MainPassionCell.h"
 #import "WUConstants.h"
+#import "WUConfiguration.h"
 
 @implementation MainPassionCell
 @synthesize mCellDelegate;

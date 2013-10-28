@@ -17,14 +17,13 @@
 
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *mActivity;
 @property (weak, nonatomic) IBOutlet UIButton *mCommentsBtn;
-@property (weak, nonatomic) IBOutlet UIButton *mLoginBtn;
+@property (weak, nonatomic) IBOutlet UIButton *mLoginBtn,*mCreateScrapBtn,*mViewScrapBtn;
 @property (weak, nonatomic) IBOutlet UIButton *mBoardBtn,*mCreatePinBtn;
 @property (weak, nonatomic) IBOutlet UIButton *mRegisterPushTokenBtn;
 
 
 -(IBAction)createSessionButtonPressed:(id)sender;
 -(IBAction)getCommentButtonPressed:(id)sender;
--(IBAction)loginRegisterWeUnite:(id)sender;
 -(IBAction)boardButtonPressed:(id)sender;
 -(IBAction)createPinButtonPressed:(id)sender;
 

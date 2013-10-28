@@ -42,7 +42,7 @@
     
   //  [mTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"UITableViewCell"];
     
-    [mTableView registerNib:[UINib nibWithNibName:@"WUTextImageCell" bundle:nil] forCellReuseIdentifier:@"WUTextImageCell"];
+    [mTableView registerNib:[UINib nibWithNibName:[WUUtilities xibBundlefileName: @"WUTextImageCell"] bundle:nil] forCellReuseIdentifier:@"WUTextImageCell"];
     [self setUpImageCaching];
     [self loadAllBoards];
 }

@@ -138,12 +138,13 @@
 
 
 @implementation NSString (Extensions)
--(NSString *)urlEncode{
+-(NSString *)urlEncode
+{
     NSString *encodedString = (__bridge NSString *)CFURLCreateStringByAddingPercentEscapes(
                                                                                   NULL,
                                                                                   (CFStringRef)self,
                                                                                   NULL,
-                                                                                  (CFStringRef)@"!*'();:@&=+$,/?%#[]",
+                                                                                  (CFStringRef)@" \"'&",
                                                                                   kCFStringEncodingUTF8 );
     return encodedString;
 }
